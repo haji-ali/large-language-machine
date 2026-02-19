@@ -20,7 +20,7 @@ client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 client.on_message = on_message
 
 print(f"Connecting to Broker at {BROKER_ADDRESS}...")
-client.connect(BROKER_ADDRESS, 1883, 60)
+client.connect(BROKER_ADDRESS, 2883, 60)
 
 # 4. Subscribe to the topic
 client.subscribe(TOPIC)
