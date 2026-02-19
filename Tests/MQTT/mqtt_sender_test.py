@@ -9,7 +9,7 @@ TOPIC = "home/sensors/pi_data"
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 client.connect(BROKER_ADDRESS, 1883, 60)
 
-print(f"Connected to internal broker. Pushing data to '{TOPIC}'...")
+print(f"Connected to external broker. Pushing data to '{TOPIC}'...")
 
 try:
     while True:
