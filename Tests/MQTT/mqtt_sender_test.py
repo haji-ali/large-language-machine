@@ -3,7 +3,7 @@ import time
 import json
 import random
 
-BROKER_ADDRESS = "100.111.176.116"
+BROKER_ADDRESS = "100.85.109.22"
 TOPIC = "home/sensors/pi_data"
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)

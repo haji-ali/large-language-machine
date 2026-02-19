@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import json
 
 # 1. Configuration
-BROKER_ADDRESS = ""
+BROKER_ADDRESS = "100.85.109.22"
 TOPIC = "home/sensors/pi_data"
 
 # 2. The Callback Function (What to do when data arrives)
