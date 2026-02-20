@@ -46,7 +46,7 @@ def read_uhf():
     # So we run 100 reads in succession and add all of them to an array
     # If tags are duplicates they don't get added in add_to_array()
     try:
-        while read_iterations < 100:
+        while read_iterations < 200:
             read = uhf.read_mul()
             if read is not None:
                 tag = read[8:20]
@@ -76,11 +76,12 @@ while i:
     print('Read #', i)
     data = read_uhf()
     if data:
-        print("Read", i, ': ', data)
+        # print("Read", i, ': ', data)
+        print ('Read #',i,'published.')
         client.publish(TOPIC, json.dumps(data)) # publish over MQTT
     else:
-        print('Read', i, ' FAILED *****************')
+        print('Read', i, ' No tags found')
     
-    time.sleep(2) # time to wait before reading again
+    time.sleep(1) # time to wait before reading again
     
     i = i + 1
