@@ -30,14 +30,9 @@ print(f"Connected to MQTT broker. Pushing data to '{TOPIC}'...")
 
 # Main functions
 
-def add_to_array(item, array):
-    if item not in array:
-        array.append(item)
-        return True
-    return False
-
 def read_uhf():
     found_tags = set() # a set ignores duplicates so I don't need to script that
+    uhf.serial.reset_input_buffer() # clear out previous reads / junk etc
     
     uhf.multiple_read()  # Starts reading
     start_time = time.time() # gets the current time
@@ -46,6 +41,10 @@ def read_uhf():
         if read is not None:
             tag_id = ''.join(read[8:20])
             found_tags.add(tag_id)
+        else:
+            # trying to find the next '0xBB' start byte in case reading got interrupted
+            if uhf.serial.in_waiting > 0:
+                uhf.serial.read(1)
 
     uhf.stop_read()  # Ends the reading session
     return list(found_tags)
@@ -59,5 +58,4 @@ while True:
     else:
         print("No tags read.")
         client.publish(TOPIC, json.dumps("uhf_empty"))
-
-time.sleep(5)
+    time.sleep(5)
