@@ -60,4 +60,4 @@ while True:
     else:
         print("No tags read.")
         client.publish(TOPIC, json.dumps("uhf_empty"))
-    time.sleep(5)
+    time.sleep(2)
