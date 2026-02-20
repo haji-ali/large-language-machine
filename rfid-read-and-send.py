@@ -15,11 +15,11 @@ def read_rfid():
 
 
 while i:
-        print('Read #', i)
-        data = read_rfid()
-        if data:
-             print("Read", i, ': ', data)
-        else:
-            print('Read', i, ':  --------------')
-            time.sleep(0.5)
-        i = i + 1
+    print('Read #', i)
+    data = read_rfid()
+    if data:
+        print("Read", i, ': ', data)
+    else:
+        print('Read', i, ':  --------------')
+        time.sleep(0.5)
+    i = i + 1
