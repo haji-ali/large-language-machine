@@ -7,16 +7,17 @@ import json
 
 # Set up UHF reader
 import uhf
-import RPi.GPIO as GPIO # pyright: ignore[reportMissingModuleSource]
+import RPi.GPIO as GPIO  # pyright: ignore[reportMissingModuleSource]
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
-GPIO.setup(7,GPIO.OUT)
-GPIO.output(7,GPIO.LOW)
+GPIO.setup(7, GPIO.OUT)
+GPIO.output(7, GPIO.LOW)
 
 baudrate = '115200'
 port = '/dev/ttyAMA0'
-uhf = uhf.UHF(port,baudrate)
+uhf = uhf.UHF(port, baudrate)
+uhf.setRegion_EU()
 
 # MQTT variables
 BROKER_ADDRESS = "100.85.109.22"
@@ -27,23 +28,54 @@ client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 client.connect(BROKER_ADDRESS, 2883, 60)
 print(f"Connected to MQTT broker. Pushing data to '{TOPIC}'...")
 
+# Functions
+
+
+def add_to_array(item, array):
+    if item not in array:
+        array.append(item)
+        return True
+    return False
+
+
 def read_uhf():
-    ser = serial.Serial("/dev/ttyS0")  # Open named port
-    ser.baudrate = 9600  # Set baud rate to 9600
-    data = ser.read(12)  # Read 12 characters from serial port to data
-    ser.close()  # Close port
-    data = data.decode("utf-8")
-    return data  # Return data
+    uhf.multiple_read()  # Starts reading
+    data = []
+    i = 0
+
+    # So we run 50 reads in succession and add all of them to an array
+    # Then remove any duplicates from the array
+    try:
+        while i < 50:
+            read = uhf.read_mul()
+            if read is not None:
+                tag = read[8:20]
+                tag_string = ''.join(tag)
+                add_to_array(tag_string, data)
+                print("Read", i, ': ', tag_string)
+            else:
+                print('Read', i, ':  --------------')
+            time.sleep(0.01)
+            i = i + 1
+    except KeyboardInterrupt:
+        uhf.stop_read()
+        time.sleep(1)
+        print("stop")
+
+    uhf.stop_read()  # Ends the reading session
+    return data
 
 i = 1
 
 while i:
     print('Read #', i)
-    data = read_rfid()
+    data = read_uhf()
     if data:
         print("Read", i, ': ', data)
-        client.publish(TOPIC, json.dumps(data))
+        client.publish(TOPIC, json.dumps(data)) # publish over MQTT
     else:
         print('Read', i, ':  --------------')
-        time.sleep(0.5)
+    
+    time.sleep(1) # time to wait before reading again
+    
     i = i + 1
