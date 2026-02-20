@@ -13,7 +13,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(17,GPIO.OUT)
 DIR_PATH = path.abspath(path.dirname(__file__))
-DefaultFont = path.join(DIR_PATH, "Fonts/SpaceMono-Regular.ttf")
+DefaultFont = path.join(DIR_PATH, "Tests/RFID/Fonts/GothamLight.ttf")
 display = SSD1306()
 
 # MQTT variables
@@ -41,7 +41,7 @@ while i:
     if data:
         print("Read", i, ': ', data)
         client.publish(TOPIC, json.dumps(data))
-        display.PrintText("ID : " +(id), cords=(4, 8), FontSize=11)
+        display.PrintText("SCANNED", cords=(4, 8), FontSize=11)
         display.DrawRect()
         display.ShowImage()
     else:
