@@ -1,7 +1,7 @@
 import time
 import sys
 sys.path.append("..")
-from Library import uhf 
+import uhf 
 import RPi.GPIO as GPIO # pyright: ignore[reportMissingModuleSource]
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
@@ -11,7 +11,7 @@ GPIO.setup(7,GPIO.OUT)
 GPIO.output(7,GPIO.LOW)# (LOW)Enable the module, and (HIGH) disable the module
 
 baudrate ='115200' # default baudrate
-port     ='/dev/ttyS0'
+port     ='/dev/ttyAMA0'
 
 uhf = uhf.UHF(port,baudrate)
 
