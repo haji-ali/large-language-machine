@@ -37,9 +37,9 @@ def add_to_array(item, array):
         return True
     return False
 
+uhf.multiple_read()  # Starts reading
 
 def read_uhf():
-    uhf.multiple_read()  # Starts reading
     data = []
     read_iterations = 0
 
@@ -62,7 +62,7 @@ def read_uhf():
         time.sleep(1)
         print("stop")
 
-    uhf.stop_read()  # Ends the reading session
+    # uhf.stop_read()  # Ends the reading session
     if data:
         number_of_tags = len(data)
         print('Counted',number_of_tags,'tags.')
