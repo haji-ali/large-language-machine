@@ -33,6 +33,16 @@ def read_rfid():
     data = data.decode("utf-8")
     return data  # Return data
 
+def info_print():
+
+    # display.WhiteDisplay()
+    display.DirImage(path.join(DIR_PATH, "Tests/RFID/Images/SB.png"))
+    display.DrawRect()
+    display.ShowImage()
+    time.sleep(1)
+    display.PrintText("Place your TAG", FontSize=14)
+    display.ShowImage()
+
 i = 1
 
 while i:
