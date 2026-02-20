@@ -2,7 +2,7 @@ import time
 import sys
 sys.path.append("..")
 from Library import uhf 
-import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO # pyright: ignore[reportMissingModuleSource]
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
