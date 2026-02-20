@@ -41,7 +41,7 @@ while i:
     if data:
         print("Read", i, ': ', data)
         client.publish(TOPIC, json.dumps(data))
-        display.PrintText(data, cords=(4, 8), FontSize=11)
+        display.PrintText("ID : " +(id), cords=(4, 8), FontSize=11)
         display.DrawRect()
         display.ShowImage()
     else:
