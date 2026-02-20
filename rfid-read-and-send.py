@@ -1,9 +1,18 @@
+# Python script to run on both RFID readers, broadcasting RFID tags over MQTT
+
 import serial           # type: ignore #import serial module
 import paho.mqtt.client as mqtt
 import time
+import json
 
+# MQTT variables
+BROKER_ADDRESS = "100.85.109.22"
+TOPIC = "home/sensors/rfid"
 
-# need this to happen continuously, see if the while statement works?
+# MQTT set up
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+client.connect(BROKER_ADDRESS, 2883, 60)
+print(f"Connected to MQTT broker. Pushing data to '{TOPIC}'...")
 
 def read_rfid():
     ser = serial.Serial("/dev/ttyS0")  # Open named port
@@ -20,6 +29,7 @@ while i:
     data = read_rfid()
     if data:
         print("Read", i, ': ', data)
+        client.publish(TOPIC, json.dumps(data))
     else:
         print('Read', i, ':  --------------')
         time.sleep(0.5)
