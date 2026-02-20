@@ -54,7 +54,8 @@ while True:
     number_of_tags = len(tags)
     
     if tags:
-        print(f"{number_of_tags} tags scanned: {tags}")
+        print(f"{number_of_tags} tags scanned.")
+        # print(f"Tags: {tags}")
         client.publish(TOPIC, json.dumps(tags))
     else:
         print("No tags read.")
