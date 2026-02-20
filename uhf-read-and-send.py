@@ -51,9 +51,10 @@ def read_uhf():
 
 while True:
     tags = read_uhf()
+    number_of_tags = len(tags)
     
     if tags:
-        print(f"Tags scanned: {tags}")
+        print(f"{number_of_tags} tags scanned: {tags}")
         client.publish(TOPIC, json.dumps(tags))
     else:
         print("No tags read.")
