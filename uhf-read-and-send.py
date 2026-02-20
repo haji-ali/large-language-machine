@@ -81,6 +81,7 @@ while i:
         client.publish(TOPIC, json.dumps(data)) # publish over MQTT
     else:
         print('Read', i, ' No tags found')
+        client.publish(TOPIC, json.dumps("uhf_empty")) # publish over MQTT
     
     time.sleep(1) # time to wait before reading again
     
