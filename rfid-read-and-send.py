@@ -13,6 +13,7 @@ def read_rfid():
     data = data.decode("utf-8")
     return data  # Return data
 
+i = 1
 
 while i:
     print('Read #', i)
