@@ -41,29 +41,34 @@ def add_to_array(item, array):
 def read_uhf():
     uhf.multiple_read()  # Starts reading
     data = []
-    i = 0
+    read_iterations = 0
 
-    # So we run 50 reads in succession and add all of them to an array
-    # Then remove any duplicates from the array
+    # So we run 100 reads in succession and add all of them to an array
+    # If tags are duplicates they don't get added in add_to_array()
     try:
-        while i < 50:
+        while read_iterations < 100:
             read = uhf.read_mul()
             if read is not None:
                 tag = read[8:20]
                 tag_string = ''.join(tag)
                 add_to_array(tag_string, data)
-                print("Read", i, ': ', tag_string)
-            else:
-                print('Read', i, ':  --------------')
+                # print("Read", i, ': ', tag_string)
+            # else:
+                # print('Read', i, ':  --------------')
             time.sleep(0.01)
-            i = i + 1
+            read_iterations = read_iterations + 1
     except KeyboardInterrupt:
         uhf.stop_read()
         time.sleep(1)
         print("stop")
 
     uhf.stop_read()  # Ends the reading session
-    return data
+    if data:
+        number_of_tags = len(data)
+        print('Counted',number_of_tags,'tags.')
+        return data
+    else:
+        return False
 
 i = 1
 
@@ -74,8 +79,8 @@ while i:
         print("Read", i, ': ', data)
         client.publish(TOPIC, json.dumps(data)) # publish over MQTT
     else:
-        print('Read', i, ':  --------------')
+        print('Read', i, ' FAILED *****************')
     
-    time.sleep(1) # time to wait before reading again
+    time.sleep(2) # time to wait before reading again
     
     i = i + 1
