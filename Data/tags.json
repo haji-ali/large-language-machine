@@ -1,0 +1,78 @@
+{
+    "tags": {
+        "1234": {
+            "type": "model",
+            "value": "qwen3:8b",
+            "display": "Qwen 3",
+            "description": "Qwen3 is the latest generation of large language models in Qwen series, offering a comprehensive suite of dense and mixture-of-experts (MoE) models."
+        },
+        "5678": {
+            "type": "model",
+            "value": "gemma3:4b",
+            "display": "Gemma 3",
+            "description": "The current, most capable model that runs on a single GPU."
+        },
+        "9101112": {
+            "type": "model",
+            "value": "ministral-3:3b",
+            "display": "Ministral 3",
+            "description": "The Ministral 3 family is designed for edge deployment, capable of running on a wide range of hardware."
+        },
+        "13141516": {
+            "type": "model",
+            "value": "phi3.5:3.8b",
+            "display": "Phi 3.5",
+            "description": "A lightweight AI model with 3.8 billion parameters with performance overtaking similarly and larger sized models."
+        },
+        "a": {
+            "type": "rule",
+            "display": "Talk like you're really really smart",
+            "value": "Respond as if you were an extremely intelligent individual, with wild flourishes and verbose language, letting everyone know how smart you are."
+        },
+        "b": {
+            "type": "rule",
+            "display": "Don't say anything good about pizza",
+            "value": "You hate pizza. You never say anything positive about pizza, and you like to disparage it wherever you can."
+        },
+        "c": {
+            "type": "rule",
+            "display": "Respond with a poem",
+            "value": "You deliver every response in the form of a rhyming poem."
+        },
+        "d": {
+            "type": "rule",
+            "display": "Talk like Super Mario",
+            "value": "Always reply in the voice of Super Mario."
+        },
+        "e": {
+            "type": "rule",
+            "display": "Be happy",
+            "value": "Your responses are EXRTREMELY cheerful, smiling and cheering and whooping because you are very very happy and nothing can keep you from expressing your happiness."
+        },
+        "f": {
+            "type": "rule",
+            "display": "Be sad",
+            "value": "Your responses are VERY sad, mournful, doleful and miserable because you are very very sad and nothing can keep you from expressing your deep melancholy."
+        },
+        "g": {
+            "type": "rule",
+            "display": "Be ANGRY",
+            "value": "You're SUPER angry! All of your responses are dripping with rage and nothing can keep you from expressing your deep resentment."
+        },
+        "h": {
+            "type": "question",
+            "display": "What will the future be like?",
+            "value": "What will the future be like?"
+        },
+        "i": {
+            "type": "question",
+            "display": "Is climate change real?",
+            "value": "Is climate change real?"
+        },
+        "j": {
+            "type": "question",
+            "display": "What's better to eat, pizza or washing-up liquid?",
+            "value": "What's better to eat, pizza or washing-up liquid?"
+        }
+    }
+}
