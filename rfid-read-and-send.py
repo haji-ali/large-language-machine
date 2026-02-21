@@ -30,7 +30,7 @@ while i:
     data = read_rfid()
     if data:
         print("Read", i, ': ', data)
-        payload = {"rfid_tag": data} # reformat as a json object
+        payload = [data] # reformat as an array
         client.publish(TOPIC, json.dumps(payload))
     else:
         print('Read', i, ':  --------------')
