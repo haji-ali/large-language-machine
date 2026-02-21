@@ -21,8 +21,8 @@ TOPIC2 = "home/sensors/uhf"
 def parse_tags(tags):
     number_of_tags = tags.len
     
-    for tag in number_of_tags:
-        
+    for tag in tags:
+        print(tag)
         
 
 # A function to compose received data into a prompt
