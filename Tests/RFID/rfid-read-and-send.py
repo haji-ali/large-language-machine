@@ -49,7 +49,7 @@ while True:
     else:
         # Instead of getting stuck, we just say 'Nothing here'
         print("No tag present in buffer.")
-        client.publish(TOPIC, "none")
+        client.publish(TOPIC, json.dumps("none"))
     
     # 4. Your Intermittent Delay
     # You can set this to 1, 5, or 60 seconds. 
