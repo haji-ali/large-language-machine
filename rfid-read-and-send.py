@@ -18,6 +18,7 @@ def read_rfid():
     ser = serial.Serial("/dev/ttyS0")  # Open named port
     ser.baudrate = 9600  # Set baud rate to 9600
     data = ser.read(12)  # Read 12 characters from serial port to data
+    ser.reset_input_buffer() # Flush the data (I think this is cleaner/reduces errors)
     ser.close()  # Close port
     data = data.decode("utf-8")
     return data  # Return data
