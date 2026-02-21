@@ -12,13 +12,18 @@ BASE = Path(__file__).resolve().parent
 DATA_FILE = BASE / "Data" / "tags.json"
 with DATA_FILE.open(encoding="utf-8") as f:
     tags = json.load(f)
-print(tags)
+# print(tags)
 
 BROKER_ADDRESS = "localhost"
 TOPIC1 = "home/sensors/rfid"
 TOPIC2 = "home/sensors/uhf"
 
-# A function to parse data from a json
+def parse_tags(tags):
+    number_of_tags = tags.len
+    
+    for tag in number_of_tags:
+        
+        
 
 # A function to compose received data into a prompt
 
