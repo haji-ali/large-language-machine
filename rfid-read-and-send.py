@@ -4,6 +4,14 @@ import serial           # type: ignore #import serial module
 import paho.mqtt.client as mqtt
 import time
 import json
+from pathlib import Path
+
+# Bring the tags data in from Data/tags.json as a variable called tags
+BASE = Path(__file__).resolve().parent
+DATA_FILE = BASE / "Data" / "tags.json"
+with DATA_FILE.open(encoding="utf-8") as f:
+    tags = json.load(f)
+print(tags)
 
 # MQTT variables
 BROKER_ADDRESS = "100.85.109.22"
