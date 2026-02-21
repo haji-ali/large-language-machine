@@ -1,9 +1,18 @@
 # Tasks: listen on MQTT
 # convert tags received into strings via their reference in json
-# 
+# compile a prompt using strings
+# send prompt to Ollama and print results
 
 import paho.mqtt.client as mqtt
 import json
+from pathlib import Path
+
+# Bring the tags data in from Data/tags.json as a variable called tags
+BASE = Path(__file__).resolve().parent
+DATA_FILE = BASE / "Data" / "tags.json"
+with DATA_FILE.open(encoding="utf-8") as f:
+    tags = json.load(f)
+print(tags)
 
 BROKER_ADDRESS = "localhost"
 TOPIC1 = "home/sensors/rfid"
