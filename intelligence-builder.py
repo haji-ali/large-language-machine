@@ -11,19 +11,25 @@ from pathlib import Path
 BASE = Path(__file__).resolve().parent
 DATA_FILE = BASE / "Data" / "tags.json"
 with DATA_FILE.open(encoding="utf-8") as f:
-    tags = json.load(f)
+    tags_dict = json.load(f)
 print("----------------------------------------------")
-print(tags)
+print(tags_dict)
 print("----------------------------------------------")
 
 BROKER_ADDRESS = "localhost"
 TOPIC1 = "home/sensors/rfid"
 TOPIC2 = "home/sensors/uhf"
 
-def parse_tags(tags):
-    number_of_tags = tags.len
-    
-    for tag in tags:
+def fetch_tags(tags):
+ 
+     for tag in tags:
+        try:
+            type = tags_dict[tag]
+        except KeyError:
+            print("Invalid tag")
+        if type == "model":
+            # continue writing this!!
+            return
         print(tag)
         
 
