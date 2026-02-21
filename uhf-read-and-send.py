@@ -56,8 +56,10 @@ while True:
     if tags:
         print(f"{number_of_tags} tags scanned.")
         # print(f"Tags: {tags}")
-        client.publish(TOPIC, json.dumps(tags))
+        payload = tags
+        client.publish(TOPIC, json.dumps(payload))
     else:
         print("No tags read.")
-        client.publish(TOPIC, json.dumps("uhf_empty"))
+        payload = "uhf_empty"
+        client.publish(TOPIC, json.dumps(payload))
     time.sleep(2)
