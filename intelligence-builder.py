@@ -12,7 +12,9 @@ BASE = Path(__file__).resolve().parent
 DATA_FILE = BASE / "Data" / "tags.json"
 with DATA_FILE.open(encoding="utf-8") as f:
     tags = json.load(f)
-# print(tags)
+print("----------------------------------------------")
+print(tags)
+print("----------------------------------------------")
 
 BROKER_ADDRESS = "localhost"
 TOPIC1 = "home/sensors/rfid"
