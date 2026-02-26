@@ -31,7 +31,7 @@ while i:
     if data and data != "000000000000":
         print("Read", i, ': ', data)
         payload = [data] # reformat as an array
-        client.publish(TOPIC, json.dumps(payload))
+        client.publish(TOPIC, json.dumps(payload), retain=True)
     else:
         print('Read', i, ':  --------------')
         time.sleep(0.5)
