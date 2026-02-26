@@ -1,0 +1,12 @@
+[Unit]
+Description=Runs a UHF RFID reader script which transmits messages over MQTT.
+After=multi-user.target
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/nathan/intelligence-builder/uhf-read.py
+StandardInput=tty-force
+
+[Install]
+WantedBy=multi-user.target
