@@ -28,7 +28,7 @@ i = 1
 while i:
     print('Read #', i)
     data = read_rfid()
-    if data:
+    if data and data != "000000000000":
         print("Read", i, ': ', data)
         payload = [data] # reformat as an array
         client.publish(TOPIC, json.dumps(payload))
