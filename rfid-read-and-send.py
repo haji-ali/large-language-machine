@@ -12,6 +12,7 @@ TOPIC = "home/sensors/rfid"
 # MQTT set up
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 client.connect(BROKER_ADDRESS, 2883, 60)
+client.loop_start()
 print(f"Connected to MQTT broker. Pushing data to '{TOPIC}'...")
 
 def read_rfid():
@@ -31,7 +32,7 @@ while i:
     if data and data != "000000000000":
         print("Read", i, ': ', data)
         payload = [data] # reformat as an array
-        client.publish(TOPIC, json.dumps(payload), retain=True)
+        client.publish(TOPIC, json.dumps(payload))
     else:
         print('Read', i, ':  --------------')
         time.sleep(0.5)
