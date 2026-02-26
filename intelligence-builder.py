@@ -10,8 +10,9 @@ import paho.mqtt.client as mqtt  # pyright: ignore[reportMissingImports]
 import json
 import ollama
 from pathlib import Path
+from rich import print
 
-debug_mode = True
+debug_mode = False
 
 # Initialise the global prompt variables
 prompt = []
@@ -53,10 +54,10 @@ def ollama_request(prompt_dict):
     try:
         response = ollama.generate(**payload)
         if debug_mode:
-            print(payload)
-            print("---------------------------------------------------------")
-            print(response['response'])
-            print("---------------------------------------------------------")
+            print(payload)  
+        print("---------------------------------------------------------")
+        print(response['response'])
+        print("---------------------------------------------------------")
     except Exception as e:
         print(f"Ollama API request failed. Error: {e}")
     return
