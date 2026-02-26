@@ -8,18 +8,18 @@
 
 import paho.mqtt.client as mqtt  # pyright: ignore[reportMissingImports]
 import json
-import ollama  # need to install on Inference machine venv!
+import ollama
 from pathlib import Path
 
-# Initialise the prompt variables
+# Initialise the global prompt variables
 prompt = []
 model = ""
 rules = []
 question = ""
 
-# Bring the tags data in from Data/tags.json as a variable called tags
+# Bring the tags data in from Data/database.json as a variable called tags
 BASE = Path(__file__).resolve().parent
-DATA_FILE = BASE / "Data" / "tags.json"
+DATA_FILE = BASE / "Data" / "database.json"
 with DATA_FILE.open(encoding="utf-8") as f:
     database = json.load(f)
 print("----------------------------------------------")
@@ -27,13 +27,14 @@ print(database)
 print("----------------------------------------------")
 
 # Ollama setup
-secret_rules = database["setup"["secret_rules"]]
-temperature = database["setup"["temperature"]] # later replace this with temperature from a sensor isntead of database
+secret_rules = database["setup"]["secret_rules"]
+temperature = database["setup"]["temperature"] # later replace this with temperature from a sensor isntead of database
 
 # MQTT setup
 BROKER_ADDRESS = "localhost"
 TOPIC1 = "home/sensors/rfid"
 TOPIC2 = "home/sensors/uhf"
+TOPIC3 = "home/sensors/trigger"
 
 
 def ollama_request(prompt_dict):
@@ -54,56 +55,76 @@ def ollama_request(prompt_dict):
 
 
 def compose_prompt(tags):
+    global model, rules, question, temperature
 
-    # First check if any of the tags we're working with are UHF tags
-    # and if so then empty the rules list
-    for tag in tags:
-        try:
-            type = database["tags"[tag["type"]]]
-        except KeyError:
-            print("KeyError when finding tag in database, is it invalid?")
-        if type == "rules":
-            print("UHF tags received, emptying rules variable")
-            rules = []
-        else:
-            print("RFID tag received")
+    if tags == "uhf_empty":
+        rules = []
+        print("compose_prompt(): No UHF tags, ruleset is empty.")
+    else:
+        # First check if any of the tags we're working with are UHF tags
+        # and if so then empty the rules list
+        for tag in tags:
+            try:
+                type = database["tags"][tag]["type"]
+            except KeyError:
+                print(f"compose_prompt(): KeyError when finding tag '{tag}' in database, is it invalid?")
+            if type == "rules":
+                print("UHF tags received, emptying rules variable")
+                rules = []
+            else:
+                print("RFID tag received")
 
-    # and then iterate through each tag mapping it to the correct property
-    for tag in tags:
-        try:
-            type = database["tags"[tag["type"]]]
-        except KeyError:
-            print("KeyError when finding tag in database, is it invalid?")
-        if type == "model":
-            model = database["tags" : [tag["value"]]]
-            print(f"Model: {database["tags":[tag["display"]]]}")
-        elif type == "rule":
-            rules.append(database["tags" : [tag["value"]]])
-            print(f"Added rule: {database["tags":[tag["display"]]]}")
-        elif type == "question":
-            question = database["tags" : [tag["value"]]]
-            print(f"Question is: {database["tags":[tag["display"]]]}")
-        else:
-            print("Invalid tag, not found in database")
+        # and then iterate through each tag mapping it to the correct property
+        for tag in tags:
+            try:
+                type = database["tags"][tag]["type"]
+            except KeyError:
+                print(f"compose_prompt(): KeyError when finding tag '{tag}' in database, is it invalid?")
+            if type == "model":
+                model = database["tags"][tag]["value"]
+                print(f"Model: {database["tags"][tag]["display"]}")
+            elif type == "rule":
+                rules.append(database["tags"][tag]["value"])
+                print(f"Added rule: {database["tags"][tag]["display"]}")
+            elif type == "question":
+                question = database["tags"][tag]["value"]
+                print(f"Question is: {database["tags"][tag]["display"]}")
+            else:
+                print(f"Invalid tag: '{tag}' not found in database")
 
-    prompt = {
-        "model": model,
-        "rules": rules,
-        "question": question,
-        "temperature": temperature,
-    }
-    return prompt
+
+    if model and rules and question and temperature:
+        composed_prompt = {
+            "model": model,
+            "rules": rules,
+            "question": question,
+            "temperature": temperature,
+        }
+        print("Composed prompt:")
+        print(composed_prompt)
+        return composed_prompt
+    else:
+        print('compose_prompt(): Not enough data received to put a full prompt together.')
+        return False
 
 
 # MQTT data handling when received
 def on_message(client, userdata, msg):
+    global prompt
+
     try:
         payload = msg.payload.decode("utf-8")
         data = json.loads(payload)
         print(f"Received Data: {data}")
-
+        if data == "TRIGGER":
+            if prompt:
+                ollama_request(prompt)
+            else:
+                print("on_message(): No inference triggered because there's no prompt data.")
+        else:
+            prompt = compose_prompt(data)
     except Exception as e:
-        print(f"Error parsing message: {e}")
+        print(f"on_message(): Error parsing message: {e}")
 
 
 # Set up MQTT client
@@ -112,12 +133,9 @@ client.on_message = on_message
 
 print(f"Connecting to Broker at {BROKER_ADDRESS}...")
 client.connect(BROKER_ADDRESS, 2883, 60)
-client.subscribe([(TOPIC1, 0), (TOPIC2, 0)])
+client.subscribe([(TOPIC1, 0), (TOPIC2, 0), (TOPIC3, 0)])
 
-print(f"Listening for updates on '{TOPIC1}' and '{TOPIC2}'...")
+print(f"Listening for updates on '{TOPIC1}', '{TOPIC2}' and '{TOPIC3}'...")
 
 # Loop Forever
 client.loop_forever()
-
-# Need something to trigger the ollama inference!
-# Maybe assume that our future button/trigger will broadcast an MQTT message
