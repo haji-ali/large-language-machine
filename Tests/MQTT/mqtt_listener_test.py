@@ -5,6 +5,7 @@ import json
 BROKER_ADDRESS = "localhost"
 TOPIC1 = "home/sensors/rfid"
 TOPIC2 = "home/sensors/uhf"
+TOPIC3 = "home/sensors/trigger"
 
 # 2. The Callback Function (What to do when data arrives)
 def on_message(client, userdata, msg):
@@ -24,8 +25,8 @@ print(f"Connecting to Broker at {BROKER_ADDRESS}...")
 client.connect(BROKER_ADDRESS, 2883, 60)
 
 # 4. Subscribe to the topics
-client.subscribe([(TOPIC1,0), (TOPIC2,0)])
-print(f"Listening for updates on '{TOPIC1}' and '{TOPIC2}'...")
+client.subscribe([(TOPIC1,0), (TOPIC2,0), (TOPIC3,0)])
+print(f"Listening for updates on '{TOPIC1}', '{TOPIC2}' and '{TOPIC3}'...")
 
 # 5. Loop Forever (Handles network reconnects automatically)
 client.loop_forever()
