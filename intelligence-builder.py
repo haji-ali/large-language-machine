@@ -11,6 +11,8 @@ import json
 import ollama
 from pathlib import Path
 
+debug_mode = True
+
 # Initialise the global prompt variables
 prompt = []
 model = ""
@@ -22,9 +24,10 @@ BASE = Path(__file__).resolve().parent
 DATA_FILE = BASE / "Data" / "database.json"
 with DATA_FILE.open(encoding="utf-8") as f:
     database = json.load(f)
-print("----------------------------------------------")
-print(database)
-print("----------------------------------------------")
+if debug_mode:
+    print("----------------------------------------------")
+    print(database)
+    print("----------------------------------------------")
 
 # Ollama setup
 secret_rules = database["setup"]["secret_rules"]
@@ -48,9 +51,14 @@ def ollama_request(prompt_dict):
     }
 
     try:
-        ollama.generate(payload)
-    except:
-        print("Ollama API request failed.")
+        response = ollama.generate(**payload)
+        if debug_mode:
+            print(payload)
+            print("---------------------------------------------------------")
+            print(response['response'])
+            print("---------------------------------------------------------")
+    except Exception as e:
+        print(f"Ollama API request failed. Error: {e}")
     return
 
 
@@ -59,52 +67,75 @@ def compose_prompt(tags):
 
     if tags == "uhf_empty":
         rules = []
-        print("compose_prompt(): No UHF tags, ruleset is empty.")
-    else:
-        # First check if any of the tags we're working with are UHF tags
-        # and if so then empty the rules list
-        for tag in tags:
-            try:
-                type = database["tags"][tag]["type"]
-            except KeyError:
-                print(f"compose_prompt(): KeyError when finding tag '{tag}' in database, is it invalid?")
-            if type == "rules":
-                print("UHF tags received, emptying rules variable")
-                rules = []
-            else:
-                print("RFID tag received")
+        if debug_mode:
+            print("compose_prompt(): No UHF tags, ruleset cleared.")
+        return False
+    
+    # First step: check if any of the received tags are Rules
+    # # and if so, we want to clear the ruleset and construct it from scratch   
+    for tag in tags:
+        
+        # check it's a valid tag
+        tag_data = database["tags"].get(tag)
+        if not tag_data:
+            print(f"compose_prompt(): '{tag}' not found in database.")
+            continue
 
-        # and then iterate through each tag mapping it to the correct property
-        for tag in tags:
-            try:
-                type = database["tags"][tag]["type"]
-            except KeyError:
-                print(f"compose_prompt(): KeyError when finding tag '{tag}' in database, is it invalid?")
-            if type == "model":
-                model = database["tags"][tag]["value"]
-                print(f"Model: {database["tags"][tag]["display"]}")
-            elif type == "rule":
-                rules.append(database["tags"][tag]["value"])
-                print(f"Added rule: {database["tags"][tag]["display"]}")
-            elif type == "question":
-                question = database["tags"][tag]["value"]
-                print(f"Question is: {database["tags"][tag]["display"]}")
-            else:
+        tag_type = tag_data["type"]
+
+        if tag_type == "rule":
+            if debug_mode:
+                print("UHF check: UHF tags received, emptying the `rules` variable")
+            rules = []
+
+    # and now start again, iterating through each tag and mapping it to the correct property
+    for tag in tags:
+
+        # check it's a valid tag (have to do this again in case we're looking at RFIDs this time)
+        tag_data = database["tags"].get(tag)
+        if not tag_data:
+            print(f"compose_prompt(): '{tag}' not found in database.")
+            continue
+
+        tag_type = tag_data["type"]
+        tag_value = tag_data["value"]
+        tag_display = tag_data["display"]
+
+        if tag_type == "model":
+            model = tag_value
+            if debug_mode:
+                print(f"Model: {tag_display}")
+
+        elif tag_type == "rule":
+            if tag_value not in rules:
+                rules.append(tag_value)
+            if debug_mode:
+                print(f"Added rule: {tag_display}")
+
+        elif tag_type == "question":
+            question = tag_value
+            if debug_mode:
+                print(f"Question is: {tag_display}")
+        else:
+            if debug_mode:
                 print(f"Invalid tag: '{tag}' not found in database")
 
 
     if model and rules and question and temperature:
+        rules_string = " ".join(rules)
         composed_prompt = {
             "model": model,
-            "rules": rules,
+            "rules": rules_string,
             "question": question,
             "temperature": temperature,
         }
-        print("Composed prompt:")
-        print(composed_prompt)
+        if debug_mode:
+            print("Prompt updated:")
+            print(composed_prompt)
         return composed_prompt
     else:
-        print('compose_prompt(): Not enough data received to put a full prompt together.')
+        if debug_mode:
+            print('compose_prompt(): Not enough data received to put a full prompt together.')
         return False
 
 
@@ -113,16 +144,28 @@ def on_message(client, userdata, msg):
     global prompt
 
     try:
-        payload = msg.payload.decode("utf-8")
-        data = json.loads(payload)
-        print(f"Received Data: {data}")
-        if data == "TRIGGER":
+        payload = msg.payload.decode("utf-8").strip()
+        if payload == "TRIGGER" or payload == '["TRIGGER"]':
             if prompt:
                 ollama_request(prompt)
             else:
-                print("on_message(): No inference triggered because there's no prompt data.")
+                if debug_mode:
+                    print("on_message(): No inference triggered because there's no prompt data.")
+            return
         else:
-            prompt = compose_prompt(data)
+            # Try to parse as JSON for tag lists, fallback to raw string for single tags
+            try:
+                data = json.loads(payload)
+            except json.JSONDecodeError:
+                data = [payload] # Treat single tag string as a list of one
+            
+            if debug_mode:
+                print(f"Received Data: {data}")
+            
+            new_prompt = compose_prompt(data)
+            if new_prompt:
+                prompt = new_prompt
+
     except Exception as e:
         print(f"on_message(): Error parsing message: {e}")
 

@@ -1,7 +1,7 @@
 {
     "setup": {
         "secret_rules": "Provide a concise response of less than 30 words. EXTREMELY IMPORTANT: Your responses will be viewed by children so must be appropriate for all ages and use clean, family-friendly language and themes. ",
-        "temperature": "0.75"
+        "temperature": 0.75
     },
     "tags": {
         "120304F906EA": {

@@ -9,7 +9,7 @@ client.connect(BROKER_ADDRESS, 2883, 60)
 
 print(f"Connected to external broker. Pushing data to '{TOPIC}'...")
 
-payload = "TRIGGER"
+payload = ["TRIGGER"]
 client.publish(TOPIC, json.dumps(payload))
 print(f"Sent: {payload}")
 client.disconnect()
