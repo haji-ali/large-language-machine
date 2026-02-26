@@ -1,0 +1,9 @@
+[Unit]
+Description=Runs an RFID reader script which transmits messages over MQTT.
+
+[Service]
+Type=simple
+ExecStart=/bin/bash python3 /home/intelligence-builder/rfid-read.py
+
+[Install]
+WantedBy=multi-user.target
