@@ -10,7 +10,7 @@ PORT = 2883
 
 # Define the GPIO pins
 button_led = LED(23)    # Connected to GPIO 23 (Pin 16)
-push_button = Button(24, bounce_time=0.5)  # Connected to GPIO 24 (Pin 18) and bounce_time stops it firing tonnes of messages
+push_button = Button(24, bounce_time=0.1)  # Connected to GPIO 24 (Pin 18) and bounce_time stops it firing tonnes of messages
 
 
 def button_press():
