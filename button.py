@@ -16,8 +16,7 @@ push_button = Button(24, bounce_time=0.5)  # Connected to GPIO 24 (Pin 18) and b
 def button_press():
     button_led.off()
     print("button pressed!")
-
-def button_release():
+    
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     client.connect(BROKER_ADDRESS, 2883, 60)
 
@@ -28,6 +27,8 @@ def button_release():
     print(f"Sent: {payload}")
     client.disconnect()
     
+
+def button_release():
     button_led.on()
 
 
