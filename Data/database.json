@@ -4,7 +4,7 @@
         "temperature": 0.75
     },
     "tags": {
-        "120304F906EA": {
+        "0E0061CF4EEE": {
             "type": "model",
             "value": "qwen3:8b",
             "display": "Qwen 3",
