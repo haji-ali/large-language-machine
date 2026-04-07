@@ -1,12 +1,13 @@
 from gpiozero import LED, Button  # pyright: ignore[reportMissingImports]
-import paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt # pyright: ignore[reportMissingImports]
 import json
 from signal import pause
 
 # MQTT variables
-BROKER_ADDRESS = "100.85.109.22"
-TOPIC = "home/sensors/trigger"
+ADDRESS = "100.85.109.22"
 PORT = 2883
+KEEPALIVE = 60
+TOPIC = "home/sensors/trigger"
 
 # Define the GPIO pins
 button_led = LED(23)    # Connected to GPIO 23 (Pin 16)
@@ -18,7 +19,7 @@ def button_press():
     print("button pressed!")
     
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-    client.connect(BROKER_ADDRESS, 2883, 60)
+    client.connect(ADDRESS, PORT, KEEPALIVE)
 
     print(f"Connected to external broker. Pushing data to '{TOPIC}'...")
 
