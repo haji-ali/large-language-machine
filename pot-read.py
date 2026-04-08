@@ -23,7 +23,7 @@ try:
         rounded_val = round(val,3)
         if rounded_val != last_value:
             last_value = rounded_val
-            print(f"Rotary: {val:.2f}", end="\r")
+            print(f"Rotary: {rounded_val:.2f}", end="\r")
 
             payload = [val]
             client.publish(TOPIC, json.dumps(payload))
