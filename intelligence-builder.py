@@ -199,7 +199,8 @@ def on_message(client, userdata, msg):
         
         elif msg.topic == TOPIC4:
             # set temperature if that's what we got!
-            print(f"received temperature data: {raw_payload}")
+            if debug_mode:
+                print(f"received temperature data: {raw_payload}")
             try:
                 temp_data = json.loads(raw_payload)
                 temperature = temp_data[0] if isinstance(temp_data, list) else float(temp_data)
