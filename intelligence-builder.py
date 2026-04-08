@@ -159,9 +159,11 @@ def on_message(client, userdata, msg):
         elif msg.topic == TOPIC4:
             # set temperature if that's what we got!
             print("received temperature data:")
-            # payload = msg.payload.decode("utf-8").strip()
-            print(payload)
-            temperature = payload
+            payload = msg.payload.decode("utf-8").strip()
+            if payload:
+                print(payload)
+                temperature = payload
+            return
         else:
             # Try to parse as JSON for tag lists, fallback to raw string for single tags
             try:
