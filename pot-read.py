@@ -20,12 +20,10 @@ last_value = None
 try:
     while True:
         val = pot.value
-        rounded_val = round(val,3)
+        rounded_val = round(val,1)
         if rounded_val != last_value:
             last_value = rounded_val
-            print(f"Rotary: {rounded_val:.2f}", end="\r")
-
-            payload = [val]
+            payload = [rounded_val]
             client.publish(TOPIC, json.dumps(payload))
             print(f"Sent: {payload}")
         
