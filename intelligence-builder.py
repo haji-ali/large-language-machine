@@ -123,7 +123,7 @@ def compose_prompt(tags):
                 print(f"Invalid tag: '{tag}' not found in database")
 
 
-    if model and rules and question and temperature:
+    if model and rules and question and temperature is not None:
         rules_string = " ".join(rules)
         composed_prompt = {
             "model": model,
@@ -145,31 +145,38 @@ def compose_prompt(tags):
 def on_message(client, userdata, msg):
     global prompt
     global temperature
-
+    
     try:
+        # Extract the payload immediately so it's available everywhere
+        raw_payload = msg.payload.decode("utf-8").strip()
+        
+        if debug_mode:
+            print(f"Topic: {msg.topic} | Raw Payload: {raw_payload}")
+
         if msg.topic == TOPIC3:
             # if it's a trigger:
-            payload = msg.payload.decode("utf-8").strip()
             if prompt:
                 ollama_request(prompt)
             else:
                 if debug_mode:
                     print("on_message(): No inference triggered because there's no prompt data.")
             return
+        
         elif msg.topic == TOPIC4:
             # set temperature if that's what we got!
-            print("received temperature data:")
-            if msg.payload:
-                payload = msg.payload.decode("utf-8").strip()
-                print(payload)
-                temperature = payload
+            print(f"received temperature data: {raw_payload}")
+            try:
+                temp_data = json.loads(raw_payload)
+                temperature = temp_data[0] if isinstance(temp_data, list) else float(temp_data)
+            except (json.JSONDecodeError, ValueError, IndexError):
+                temperature = 0.8
             return
         else:
             # Try to parse as JSON for tag lists, fallback to raw string for single tags
             try:
-                data = json.loads(payload)
+                data = json.loads(raw_payload)
             except json.JSONDecodeError:
-                data = [payload] # Treat single tag string as a list of one
+                data = [raw_payload] # Treat single tag string as a list of one
             
             if debug_mode:
                 print(f"Received Data: {data}")
