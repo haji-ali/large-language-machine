@@ -32,13 +32,14 @@ if debug_mode:
 
 # Ollama setup
 secret_rules = database["setup"]["secret_rules"]
-temperature = database["setup"]["temperature"] # later replace this with temperature from a sensor isntead of database
+temperature = 0 # default value is 0, maybe should change this but good for debugging I guess?
 
 # MQTT setup
 BROKER_ADDRESS = "localhost"
 TOPIC1 = "home/sensors/rfid"
 TOPIC2 = "home/sensors/uhf"
 TOPIC3 = "home/sensors/trigger"
+TOPIC4 = "home/sensors/temperature"
 
 
 def ollama_request(prompt_dict):
@@ -143,16 +144,22 @@ def compose_prompt(tags):
 # MQTT data handling when received
 def on_message(client, userdata, msg):
     global prompt
+    global temperature
 
     try:
-        payload = msg.payload.decode("utf-8").strip()
-        if payload == "TRIGGER" or payload == '["TRIGGER"]':
+        if msg.topic == TOPIC3:
+            # if it's a trigger:
+            payload = msg.payload.decode("utf-8").strip()
             if prompt:
                 ollama_request(prompt)
             else:
                 if debug_mode:
                     print("on_message(): No inference triggered because there's no prompt data.")
             return
+        elif msg.topic == TOPIC4:
+            # set temperature if that's what we got!
+            payload = msg.payload.decode("utf-8").strip()
+            temperature = payload
         else:
             # Try to parse as JSON for tag lists, fallback to raw string for single tags
             try:
@@ -177,9 +184,9 @@ client.on_message = on_message
 
 print(f"Connecting to Broker at {BROKER_ADDRESS}...")
 client.connect(BROKER_ADDRESS, 2883, 60)
-client.subscribe([(TOPIC1, 0), (TOPIC2, 0), (TOPIC3, 0)])
+client.subscribe([(TOPIC1, 0), (TOPIC2, 0), (TOPIC3, 0), (TOPIC4, 0)])
 
-print(f"Listening for updates on '{TOPIC1}', '{TOPIC2}' and '{TOPIC3}'...")
+print(f"Listening for updates on '{TOPIC1}', '{TOPIC2}', {TOPIC3} and '{TOPIC4}'...")
 
 # Loop Forever
 client.loop_forever()

@@ -20,8 +20,9 @@ last_value = None
 try:
     while True:
         val = pot.value
-        if val != last_value:
-            last_value = val
+        rounded_val = round(val,3)
+        if rounded_val != last_value:
+            last_value = rounded_val
             print(f"Rotary: {val:.2f}", end="\r")
 
             payload = [val]
