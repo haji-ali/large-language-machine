@@ -21,6 +21,7 @@ rules = []
 question = ""
 temperature = 0.3
 previous_model = ""
+last_response = ""
 
 # Bring the tags data in from Data/database.json as a variable called tags
 BASE = Path(__file__).resolve().parent
@@ -42,12 +43,20 @@ TOPIC2 = "home/sensors/uhf"
 TOPIC3 = "home/sensors/trigger"
 TOPIC4 = "home/sensors/temperature"
 
+
 def animate(path: str):
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     ascii_animate(data, delay=0.08)
 
+
+def print_response(response):
+    print("---------------------------------------------------------------")
+    print(response['response'])
+    print("---------------------------------------------------------------")
+
 def ollama_request(prompt_dict):
+    global last_response
     system = secret_rules + prompt_dict["rules"]  # Make the system prompt
 
     payload = {
@@ -62,9 +71,8 @@ def ollama_request(prompt_dict):
         if debug_mode:
             print(payload)
         os.system('clear')
-        print("---------------------------------------------------------------")
-        print(response['response'])
-        print("---------------------------------------------------------------")
+        print_response(response)
+        last_response = response
     except Exception as e:
         print(f"Ollama API request failed. Error: {e}")
     return
@@ -134,9 +142,13 @@ def compose_prompt(tags):
                 ollama_load_model(model)
                 # do a loading animation because why not. This animation could signify loading data?
                 animate("Data/Animations/Loading_01.json")
+                # And reload the last response after the animation
+                print_response(last_response)
+                
+                previous_model = model
+                
                 if debug_mode:
                     print(f"Model: {tag_display}")
-                previous_model = model
 
         elif tag_type == "rule":
             if tag_value not in rules:
