@@ -31,9 +31,9 @@ DATA_FILE = BASE / "Data" / "database.json"
 with DATA_FILE.open(encoding="utf-8") as f:
     database = json.load(f)
 if debug_mode:
-    print("----------------------------------------------")
+    print("------------------------------------")
     print(database)
-    print("----------------------------------------------")
+    print("------------------------------------")
 
 # Ollama setup
 secret_rules = database["setup"]["secret_rules"]
@@ -53,9 +53,11 @@ def animate(path: str):
 
 def print_response(response):
     os.system('clear')
-    print("---------------------------------------------------------------")
+    print("-----------------------------------------------------")
+    print("-----------------------------------------------------")
     print(response['response'])
-    print("---------------------------------------------------------------")
+    print("-----------------------------------------------------")
+    print("-----------------------------------------------------")
 
 def ollama_request(prompt_dict):
     global last_response
