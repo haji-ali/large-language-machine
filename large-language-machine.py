@@ -20,6 +20,7 @@ model = ""
 rules = []
 question = ""
 temperature = 0.3
+previous_model = ""
 
 # Bring the tags data in from Data/database.json as a variable called tags
 BASE = Path(__file__).resolve().parent
@@ -85,11 +86,10 @@ def ollama_load_model(model):
 
 
 def compose_prompt(tags):
-    global model, rules, question, temperature
+    global model, rules, question, temperature, previous_model
     
     # if UHF reader sends uhf_empty then there are no Rules present in the bucket
     # so we need to clear the whole ruleset variable
-
     if tags == "uhf_empty":
         rules = []
         if debug_mode:
@@ -98,8 +98,7 @@ def compose_prompt(tags):
     
     # ok this gets confusing but first, check if any of the received tags are Rules
     # # and if so, we want to clear the ruleset and construct it from scratch
-    for tag in tags:
-        
+    for tag in tags:     
         # check it's a valid tag
         tag_data = database["tags"].get(tag)
         if not tag_data:
@@ -129,12 +128,15 @@ def compose_prompt(tags):
 
         if tag_type == "model":
             model = tag_value
-            # Send a dummy request to pre-load this model
-            ollama_load_model(model)
-            # do a loading animation because why not. This animation could signify loading data?
-            animate("Data/Animations/Loading_01.json")
-            if debug_mode:
-                print(f"Model: {tag_display}")
+            # See if the model has changed since the last tag read or not
+            if model != previous_model:
+                # Send a dummy request to pre-load this model
+                ollama_load_model(model)
+                # do a loading animation because why not. This animation could signify loading data?
+                animate("Data/Animations/Loading_01.json")
+                if debug_mode:
+                    print(f"Model: {tag_display}")
+                previous_model = model
 
         elif tag_type == "rule":
             if tag_value not in rules:
