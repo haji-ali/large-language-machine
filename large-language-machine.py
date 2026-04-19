@@ -109,7 +109,7 @@ def compose_prompt(tags):
     for tag in tags:     
         # check it's a valid tag
         tag_data = database["tags"].get(tag)
-        if not tag_data:
+        if not tag_data or not isinstance(tag_data, dict):
             print(f"*Warning*: unregistered tag: {tag}")
             continue
 
