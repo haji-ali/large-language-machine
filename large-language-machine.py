@@ -7,8 +7,11 @@ from pathlib import Path
 from rich import print
 from time import sleep
 
-if sys.argv[1] == "debug":
+# handle script being launched in debug mode (ie. `python3 large-language-machine.py debug`)
+debug_mode = False
+if len(sys.argv) > 1 and sys.argv[1] == "debug":
     debug_mode = True
+print("Debug mode:", debug_mode)
 
 # Initialise the global prompt variables
 prompt = []
