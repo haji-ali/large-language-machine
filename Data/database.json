@@ -22,7 +22,7 @@
             "display": "Gemma 3",
             "description": "The current, most capable model that runs on a single GPU."
         },
-        "007A7A007A7A": {
+        "0E0071A97DAB": {
             "type": "model",
             "value": "gemma3:4b",
             "display": "Gemma 3",

@@ -1,11 +1,4 @@
-# Tasks: listen on MQTT
-# convert tags received into strings via their reference in json
-# compile a prompt using strings
-# send prompt to Ollama and print results
-
-# Example of how Python sees tags.json (as the variable database):
-# {'120304F906EA': {'type': 'model', 'value': 'qwen3:8b', 'display': 'Qwen 3', 'description': 'Qwen3 is the latest generation of large language models in Qwen series, offering a comprehensive suite of dense and mixture-of-experts (MoE) models.'}, '120304E49C6D': {'type': 'model', 'value': 'gemma3:4b', 'display': 'Gemma 3', 'description': 'The current, most capable model that runs on a single GPU.'}, '120304E49564': {'type': 'model', 'value': 'ministral-3:3b', 'display': 'Ministral 3', 'description': 'The Ministral 3 family is designed for edge deployment, capable of running on a wide range of hardware.'}, '120304F93BD7': {'type': 'model', 'value': 'phi3.5:3.8b', 'display': 'Phi 3.5', 'description': 'A lightweight AI model with 3.8 billion parameters with performance overtaking similarly and larger sized models.'}, 'e28011700000021acd079101': {'type': 'rule', 'display': "Talk like you're really really smart", 'value': 'Respond as if you were an extremely intelligent individual, with wild flourishes and verbose language, letting everyone know how smart you are.'}, 'e28069950000500a27a50a50': {'type': 'rule', 'display': "Don't say anything good about pizza", 'value': 'You hate pizza. You never say anything positive about pizza, and you like to disparage it wherever you can.'}, 'e28011700000021acd079111': {'type': 'rule', 'display': 'Respond with a poem', 'value': 'You deliver every response in the form of a rhyming poem.'}, 'e28069950000400a27a51650': {'type': 'rule', 'display': 'Talk like Super Mario', 'value': 'Always reply in the voice of Super Mario.'}, 'ee28069950000400a27a51a50': {'type': 'rule', 'display': 'Be happy', 'value': 'Your responses are EXTREMELY cheerful, smiling and cheering and whooping because you are very very happy and nothing can keep you from expressing your happiness.'}, 'e28069950000400a27a50e50': {'type': 'rule', 'display': 'Be sad', 'value': 'Your responses are VERY sad, mournful, doleful and miserable because you are very very sad and nothing can keep you from expressing your deep melancholy.'}, 'e28069950000500a27a51250': {'type': 'rule', 'display': 'Be ANGRY', 'value': "You're SUPER angry! All of your responses are dripping with rage and nothing can keep you from expressing your deep resentment."}, '0E00728ED725': {'type': 'question', 'display': 'What will the future be like?', 'value': 'What will the future be like?'}, '0E00728F3BC8': {'type': 'question', 'display': 'Is climate change real?', 'value': 'Is climate change real?'}, '4C00BD86B3C4': {'type': 'question', 'display': "What's better to eat, pizza or washing-up liquid?", 'value': "What's better to eat, pizza or washing-up liquid?"}}
-
+import sys
 import paho.mqtt.client as mqtt  # pyright: ignore[reportMissingImports]
 import json
 import ollama
@@ -14,13 +7,15 @@ from pathlib import Path
 from rich import print
 from time import sleep
 
-debug_mode = False
+if sys.argv[1] == "debug":
+    debug_mode = True
 
 # Initialise the global prompt variables
 prompt = []
 model = ""
 rules = []
 question = ""
+temperature = 0.3
 
 # Bring the tags data in from Data/database.json as a variable called tags
 BASE = Path(__file__).resolve().parent
@@ -34,7 +29,6 @@ if debug_mode:
 
 # Ollama setup
 secret_rules = database["setup"]["secret_rules"]
-temperature = 0 # default value is 0, maybe should change this but good for debugging I guess?
 
 # MQTT setup
 BROKER_ADDRESS = "localhost"
