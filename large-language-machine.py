@@ -20,6 +20,8 @@ model = ""
 rules = []
 question = ""
 temperature = 0.3
+
+# Variables for logic etc
 previous_model = ""
 last_response = ""
 
@@ -48,7 +50,6 @@ def animate(path: str):
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     ascii_animate(data, delay=0.08)
-
 
 def print_response(response):
     os.system('clear')
@@ -141,8 +142,11 @@ def compose_prompt(tags):
             # But only if there *is* a previous model, we get an error if there's no previous data
             if previous_model == "":
                 ollama_load_model(model)
+                print("(pre-loading model)")
             else:
+                print("`previous_model` contains data.")
                 if model != previous_model:
+                    print("`model` is not the same as `previous_model`.")
                     # Send a dummy request to pre-load this model
                     ollama_load_model(model)
                     # do a loading animation because why not. This animation could signify loading data?
