@@ -146,7 +146,8 @@ def compose_prompt(tags):
                 ollama_load_model(model)
                 previous_model = model
             else:
-                print("`previous_model` contains data.")
+                if debug_mode:
+                    print("`previous_model` contains data.")
                 if model != previous_model:
                     if debug_mode:
                         print("`model` is not the same as `previous_model`.")
