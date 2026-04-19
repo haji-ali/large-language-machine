@@ -136,9 +136,12 @@ def compose_prompt(tags):
 
         if tag_type == "model":
             model = tag_value
+            
             # See if the model has changed since the last tag read or not
             # But only if there *is* a previous model, we get an error if there's no previous data
-            if previous_model:
+            if previous_model == "":
+                ollama_load_model(model)
+            else:
                 if model != previous_model:
                     # Send a dummy request to pre-load this model
                     ollama_load_model(model)
