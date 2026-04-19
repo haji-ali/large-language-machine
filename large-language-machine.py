@@ -87,11 +87,11 @@ def ollama_load_model(model):
     }
     try:
         ollama.generate(**payload)
-        return
+        return True
     except Exception as e:
         if debug_mode:
             print(f"Failed to pre-load model: {model}")
-        return
+        return False
 
 
 def compose_prompt(tags):
@@ -141,8 +141,12 @@ def compose_prompt(tags):
             # See if the model has changed since the last tag read or not
             # But only if there *is* a previous model, we get an error if there's no previous data
             if previous_model == "":
-                ollama_load_model(model)
                 print(f"(pre-loading {model})")
+                loaded = ollama_load_model(model)
+                if loaded:
+                    print(f"({model} loaded)")
+                else:
+                    print("model failed to load?")
                 previous_model = model
             else:
                 print("`previous_model` contains data.")
@@ -150,6 +154,7 @@ def compose_prompt(tags):
                     print("`model` is not the same as `previous_model`.")
                     # Send a dummy request to pre-load this model
                     ollama_load_model(model)
+                    previous_model = model
                     # do a loading animation because why not. This animation could signify loading data?
                     animate("Data/Animations/Loading_01.json")
                     # And reload the last response after the animation
@@ -157,6 +162,8 @@ def compose_prompt(tags):
                     
                     if debug_mode:
                         print(f"Model: {tag_display}")
+                else:
+                    print("`model` IS the same as `previous_model`")
 
         elif tag_type == "rule":
             if tag_value not in rules:
