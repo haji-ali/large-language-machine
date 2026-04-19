@@ -142,7 +142,8 @@ def compose_prompt(tags):
             # But only if there *is* a previous model, we get an error if there's no previous data
             if previous_model == "":
                 ollama_load_model(model)
-                print("(pre-loading model)")
+                print(f"(pre-loading {model})")
+                previous_model = model
             else:
                 print("`previous_model` contains data.")
                 if model != previous_model:
@@ -153,8 +154,6 @@ def compose_prompt(tags):
                     animate("Data/Animations/Loading_01.json")
                     # And reload the last response after the animation
                     print_response(last_response)
-                    
-                    previous_model = model
                     
                     if debug_mode:
                         print(f"Model: {tag_display}")
