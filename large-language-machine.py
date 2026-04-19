@@ -141,17 +141,15 @@ def compose_prompt(tags):
             # See if the model has changed since the last tag read or not
             # But only if there *is* a previous model, we get an error if there's no previous data
             if previous_model == "":
-                print(f"(pre-loading {model})")
-                loaded = ollama_load_model(model)
-                if loaded:
-                    print(f"({model} loaded)")
-                else:
-                    print("model failed to load?")
+                if debug_mode:
+                    print(f"(pre-loading {model})")
+                ollama_load_model(model)
                 previous_model = model
             else:
                 print("`previous_model` contains data.")
                 if model != previous_model:
-                    print("`model` is not the same as `previous_model`.")
+                    if debug_mode:
+                        print("`model` is not the same as `previous_model`.")
                     # Send a dummy request to pre-load this model
                     ollama_load_model(model)
                     previous_model = model
@@ -163,7 +161,8 @@ def compose_prompt(tags):
                     if debug_mode:
                         print(f"Model: {tag_display}")
                 else:
-                    print("`model` IS the same as `previous_model`")
+                    if debug_mode:
+                        print("`model` IS the same as `previous_model`")
 
         elif tag_type == "rule":
             if tag_value not in rules:
