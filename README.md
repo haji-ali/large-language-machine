@@ -1,2 +1,2 @@
-# intelligence-builder
+# Large Language Machine
 
