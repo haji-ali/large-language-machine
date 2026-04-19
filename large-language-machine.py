@@ -125,7 +125,7 @@ def compose_prompt(tags):
 
         # check it's a valid tag (have to do this again in case we're looking at RFIDs this time)
         tag_data = database["tags"].get(tag)
-        if not tag_data:
+        if not tag_data or not isinstance(tag_data, dict):
             if debug_mode:
                 print(f"*Error*: '{tag}' not found in database.")
             continue
@@ -138,7 +138,7 @@ def compose_prompt(tags):
             model = tag_value
             # See if the model has changed since the last tag read or not
             # But only if there *is* a previous model, we get an error if there's no previous data
-            if previous_model is not None:
+            if previous_model:
                 if model != previous_model:
                     # Send a dummy request to pre-load this model
                     ollama_load_model(model)
