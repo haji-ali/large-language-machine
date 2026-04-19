@@ -51,6 +51,7 @@ def animate(path: str):
 
 
 def print_response(response):
+    os.system('clear')
     print("---------------------------------------------------------------")
     print(response['response'])
     print("---------------------------------------------------------------")
@@ -70,7 +71,6 @@ def ollama_request(prompt_dict):
         response = ollama.generate(**payload)
         if debug_mode:
             print(payload)
-        os.system('clear')
         print_response(response)
         last_response = response
     except Exception as e:
@@ -137,18 +137,20 @@ def compose_prompt(tags):
         if tag_type == "model":
             model = tag_value
             # See if the model has changed since the last tag read or not
-            if model != previous_model:
-                # Send a dummy request to pre-load this model
-                ollama_load_model(model)
-                # do a loading animation because why not. This animation could signify loading data?
-                animate("Data/Animations/Loading_01.json")
-                # And reload the last response after the animation
-                print_response(last_response)
-                
-                previous_model = model
-                
-                if debug_mode:
-                    print(f"Model: {tag_display}")
+            # But only if there *is* a previous model, we get an error if there's no previous data
+            if previous_model is not None:
+                if model != previous_model:
+                    # Send a dummy request to pre-load this model
+                    ollama_load_model(model)
+                    # do a loading animation because why not. This animation could signify loading data?
+                    animate("Data/Animations/Loading_01.json")
+                    # And reload the last response after the animation
+                    print_response(last_response)
+                    
+                    previous_model = model
+                    
+                    if debug_mode:
+                        print(f"Model: {tag_display}")
 
         elif tag_type == "rule":
             if tag_value not in rules:
