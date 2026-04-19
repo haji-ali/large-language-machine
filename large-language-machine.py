@@ -53,7 +53,7 @@ def ollama_request(prompt_dict):
         "model": prompt_dict["model"],
         "system": system,
         "prompt": prompt_dict["question"],
-        "options": {"temperature": prompt_dict["temperature"]},
+        "options": {"temperature": prompt_dict["temperature"]}
     }
 
     try:
@@ -61,44 +61,27 @@ def ollama_request(prompt_dict):
         if debug_mode:
             print(payload)
         os.system('clear')
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        print("---------------------------------------------------------")
-        sleep(0.2)
-        os.system('clear')
-        print("---------------------------------------------------------")
+        print("---------------------------------------------------------------")
         print(response['response'])
-        print("---------------------------------------------------------")
+        print("---------------------------------------------------------------")
     except Exception as e:
         print(f"Ollama API request failed. Error: {e}")
     return
+
+def ollama_load_model(model):
+    payload = {
+        "model": model,
+        "system": "Respond only with the word 'ok'",
+        "prompt": "Say the word 'ok'. Do not respond with anything else.",
+        "options": {"temperature": "0"}
+    }
+    try:
+        ollama.generate(**payload)
+        return
+    except Exception as e:
+        if debug_mode:
+            print(f"Failed to pre-load model: {model}")
+        return
 
 
 def compose_prompt(tags):
@@ -146,6 +129,10 @@ def compose_prompt(tags):
 
         if tag_type == "model":
             model = tag_value
+            # Send a dummy request to pre-load this model
+            ollama_load_model(model)
+            # do a loading animation because why not. This animation could signify loading data?
+            animate("Data/Animations/Loading_01.json")
             if debug_mode:
                 print(f"Model: {tag_display}")
 
@@ -211,7 +198,7 @@ def on_message(client, userdata, msg):
                 ollama_request(prompt)
             else:
                 if debug_mode:
-                    print("on_message(): No inference triggered because there's no prompt data.")
+                    print("TW No inference triggered because there's no prompt data.")
             return
         
         elif msg.topic == TOPIC4:
@@ -239,7 +226,7 @@ def on_message(client, userdata, msg):
                 prompt = new_prompt
 
     except Exception as e:
-        print(f"on_message(): Error parsing message: {e}")
+        print(f"Warning: Error parsing message: {e}")
 
 
 # Set up MQTT client
