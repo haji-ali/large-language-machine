@@ -3,6 +3,7 @@ import paho.mqtt.client as mqtt  # pyright: ignore[reportMissingImports]
 import json
 import ollama
 import os
+from animation import ascii_animate
 from pathlib import Path
 from rich import print
 from time import sleep
@@ -40,6 +41,10 @@ TOPIC2 = "home/sensors/uhf"
 TOPIC3 = "home/sensors/trigger"
 TOPIC4 = "home/sensors/temperature"
 
+def animate(path: str):
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    ascii_animate(data, delay=0.08)
 
 def ollama_request(prompt_dict):
     system = secret_rules + prompt_dict["rules"]  # Make the system prompt
@@ -115,7 +120,7 @@ def compose_prompt(tags):
         # check it's a valid tag
         tag_data = database["tags"].get(tag)
         if not tag_data:
-            print(f"compose_prompt(): unregistered tag: {tag}")
+            print(f"*Warning*: unregistered tag: {tag}")
             continue
 
         tag_type = tag_data["type"]
@@ -131,7 +136,8 @@ def compose_prompt(tags):
         # check it's a valid tag (have to do this again in case we're looking at RFIDs this time)
         tag_data = database["tags"].get(tag)
         if not tag_data:
-            print(f"compose_prompt(): '{tag}' not found in database.")
+            if debug_mode:
+                print(f"*Error*: '{tag}' not found in database.")
             continue
 
         tag_type = tag_data["type"]
@@ -201,6 +207,7 @@ def on_message(client, userdata, msg):
         if msg.topic == TOPIC3:
             # if it's a trigger:
             if prompt:
+                animate("Data/Animations/Loading_01.json")
                 ollama_request(prompt)
             else:
                 if debug_mode:
