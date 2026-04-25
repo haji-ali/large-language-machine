@@ -6,7 +6,7 @@ import os
 from animation import ascii_animate
 from pathlib import Path
 from rich import print
-from rich.console import console
+from rich.console import Console
 from rich.table import Table
 from time import sleep
 
