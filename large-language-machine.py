@@ -70,7 +70,7 @@ def print_response(response):
     response_panel = Panel(response_string, width = 51, height = 20, padding=(1,1))
     centered_response = Align.center(response_panel, vertical="middle")
     
-    outer_panel = Panel(centered_response, width=53, height = 18 padding=(1,1))
+    outer_panel = Panel(centered_response, width=53, height = 18, padding=(1,1))
     centered_outer_panel = Align.center(outer_panel, vertical="middle")
     
     console.clear()
