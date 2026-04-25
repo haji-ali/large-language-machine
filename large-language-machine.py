@@ -15,7 +15,7 @@ console=Console()
 debug_mode = False
 if len(sys.argv) > 1 and sys.argv[1] == "debug":
     debug_mode = True
-print("Debug mode:", debug_mode)
+console.print("Debug mode:", debug_mode)
 
 # Initialise the global variables
 prompt = []
@@ -42,9 +42,9 @@ DATA_FILE = BASE / "Data" / "database.json"
 with DATA_FILE.open(encoding="utf-8") as f:
     database = json.load(f)
 if debug_mode:
-    print("------------------------------------")
-    print(database)
-    print("------------------------------------")
+    console.print("------------------------------------")
+    console.print(database)
+    console.print("------------------------------------")
 
 # Ollama setup
 secret_rules = database["setup"]["secret_rules"]
@@ -63,12 +63,12 @@ def animate(path: str):
     ascii_animate(data, delay=0.08)
 
 def print_response(response):
-    os.system('clear')
-    print("-----------------------------------------------------")
-    print("-----------------------------------------------------")
-    print(response['response'])
-    print("-----------------------------------------------------")
-    print("-----------------------------------------------------")
+    console.clear()
+    console.print("-----------------------------------------------------")
+    console.print("-----------------------------------------------------")
+    console.print(response['response'])
+    console.print("-----------------------------------------------------")
+    console.print("-----------------------------------------------------")
 
 def ollama_request(prompt_dict):
     global last_response
@@ -84,7 +84,7 @@ def ollama_request(prompt_dict):
     try:
         response = ollama.generate(**payload)
         if debug_mode:
-            print(payload)
+            console.print(payload)
         print_response(response)
         last_response = response
     except Exception as e:
@@ -103,7 +103,7 @@ def ollama_load_model(model):
         return True
     except Exception as e:
         if debug_mode:
-            print(f"Failed to pre-load model: {model}")
+            console.print(f"Failed to pre-load model: {model}")
         return False
 
 
@@ -115,7 +115,7 @@ def compose_prompt(tags):
     if tags == "uhf_empty":
         rules = []
         if debug_mode:
-            print("No UHF tags, ruleset cleared.")
+            console.print("No UHF tags, ruleset cleared.")
         return False
     
     # ok this gets confusing but first, check if any of the received tags are Rules
@@ -142,7 +142,7 @@ def compose_prompt(tags):
         tag_data = database["tags"].get(tag)
         if not tag_data or not isinstance(tag_data, dict):
             if debug_mode:
-                print(f"*Error*: '{tag}' not found in database.")
+                console.print(f"*Error*: '{tag}' not found in database.")
             continue
 
         tag_type = tag_data["type"]
@@ -157,15 +157,15 @@ def compose_prompt(tags):
             # But only if there *is* a previous model, we get an error if there's no previous data
             if previous_model == "":
                 if debug_mode:
-                    print(f"(pre-loading {model})")
+                    console.print(f"(pre-loading {model})")
                 ollama_load_model(model)
                 previous_model = model
             else:
                 if debug_mode:
-                    print("`previous_model` contains data.")
+                    console.print("`previous_model` contains data.")
                 if model != previous_model:
                     if debug_mode:
-                        print("`model` is not the same as `previous_model`.")
+                        console.print("`model` is not the same as `previous_model`.")
                     # Send a dummy request to pre-load this model
                     ollama_load_model(model)
                     previous_model = model
@@ -175,25 +175,25 @@ def compose_prompt(tags):
                     print_response(last_response)
                     
                     if debug_mode:
-                        print(f"Model: {tag_display}")
+                        console.print(f"Model: {tag_display}")
                 else:
                     if debug_mode:
-                        print("`model` IS the same as `previous_model`")
+                        console.print("`model` IS the same as `previous_model`")
 
         elif tag_type == "rule":
             if tag_value not in rules:
                 rules.append(tag_value)
             if debug_mode:
-                print(f"Added rule: {tag_display}")
+                console.print(f"Added rule: {tag_display}")
 
         elif tag_type == "question":
             question = tag_value
             rfid_2_sensor = True
             if debug_mode:
-                print(f"Question is: {tag_display}")
+                console.print(f"Question is: {tag_display}")
         else:
             if debug_mode:
-                print(f"Invalid tag: '{tag}' not found in database")
+                console.print(f"Invalid tag: '{tag}' not found in database")
 
     # 2026-04-19 Pretty sure the below line was idiotic because sometimes rules will be empty!! Removed it
     ### if model and rules and question and temperature is not None:
@@ -210,8 +210,8 @@ def compose_prompt(tags):
             "temperature": temperature,
         }
         if debug_mode:
-            print("Prompt updated:")
-            print(composed_prompt)
+            console.print("Prompt updated:")
+            console.print(composed_prompt)
         return composed_prompt
     else:
         if debug_mode:
@@ -234,10 +234,10 @@ def startup_checks(client, userdata, msg):
         console.print("Startup Test Sequence", justify="center")
         console.print(" ")
         console.print(" ")
-        startup_table = Table(title="Sensor status")
-        startup_table.add_column("Status")
-        startup_table.add_column("Sensor")
-        startup_table.add_column("Data")
+        startup_table = Table(title="Sensor status", show_lines=True)
+        startup_table.add_column("Status", justify="center")
+        startup_table.add_column("Sensor", justify="center")
+        startup_table.add_column("Data", justify="center")
         if uhf_sensor:
             startup_table.add_row("✅", "Rule ball reader", "")
         else:
@@ -255,11 +255,11 @@ def startup_checks(client, userdata, msg):
         else:
             startup_table.add_row("❌", "Temperature knob", f"{temperature}")
         if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
-            startup_table.add_row("[bold]All checks passed[/bold]", justify="center")
-            startup_table.add_row("[bold]PRESS BUTTON TO START[/bold]", justify="center", blink=True)
+            startup_table.add_row("[bold]All checks passed[/bold]", "", "", justify="center")
+            startup_table.add_row("[blink]PRESS BUTTON TO START[/blink]", "", "", justify="center")
         else:
-            startup_table.add_row("", justify="center")
-            startup_table.add_row("PRESS BUTTON TO START", justify="center", strike=True)
+            startup_table.add_row("", "", "", justify="center")
+            startup_table.add_row("", "", "", justify="center", strike=True)
         console.print(startup_table)
     
     test_update()
@@ -269,11 +269,11 @@ def startup_checks(client, userdata, msg):
         raw_payload = msg.payload.decode("utf-8").strip()
 
         if msg.topic == TOPIC_TRIGGER:
-            os.system('clear')
+            console.clear()
             # animate("Data/Animations/Loading_01.json")
-            print(" ")
-            print(" ")
-            print("Press button again to start")
+            console.print(" ")
+            console.print(" ")
+            console.print("Press button again to start")
             test_mode = False
         
         elif msg.topic == TOPIC_TEMPERATURE:
@@ -293,7 +293,7 @@ def startup_checks(client, userdata, msg):
                 data = [raw_payload] # Treat single tag string as a list of one
             
             if debug_mode:
-                print(f"Received Data: {data}")
+                console.print(f"Received Data: {data}")
             
             new_prompt = compose_prompt(data)
             test_update()
@@ -301,7 +301,7 @@ def startup_checks(client, userdata, msg):
                 prompt = new_prompt
 
     except Exception as e:
-        print(f"Warning: Error parsing message: {e}")
+        console.print(f"Warning: Error parsing message: {e}")
     
 
 def main_message_handler(client, userdata, msg):
@@ -313,7 +313,7 @@ def main_message_handler(client, userdata, msg):
         raw_payload = msg.payload.decode("utf-8").strip()
         
         if debug_mode:
-            print(f"Topic: {msg.topic} | Raw Payload: {raw_payload}")
+            console.print(f"Topic: {msg.topic} | Raw Payload: {raw_payload}")
 
         if msg.topic == TOPIC_TRIGGER:
             
@@ -322,13 +322,13 @@ def main_message_handler(client, userdata, msg):
                 ollama_request(prompt)
             else:
                 if debug_mode:
-                    print("TW No inference triggered because there's no prompt data.")
+                    console.print("TW No inference triggered because there's no prompt data.")
             return
         
         elif msg.topic == TOPIC_TEMPERATURE:
             # set temperature if that's what we got!
             if debug_mode:
-                print(f"received temperature data: {raw_payload}")
+                console.print(f"received temperature data: {raw_payload}")
             try:
                 temp_data = json.loads(raw_payload)
                 temperature = temp_data[0] if isinstance(temp_data, list) else float(temp_data)
@@ -343,25 +343,25 @@ def main_message_handler(client, userdata, msg):
                 data = [raw_payload] # Treat single tag string as a list of one
             
             if debug_mode:
-                print(f"Received Data: {data}")
+                console.print(f"Received Data: {data}")
             
             new_prompt = compose_prompt(data)
             if new_prompt:
                 prompt = new_prompt
 
     except Exception as e:
-        print(f"Warning: Error parsing message: {e}")
+        console.print(f"Warning: Error parsing message: {e}")
 
 
 # Set up MQTT client
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 
 
-print(f"Connecting to Broker at {BROKER_ADDRESS}...")
+console.print(f"Connecting to Broker at {BROKER_ADDRESS}...")
 client.connect(BROKER_ADDRESS, 2883, 60)
 client.subscribe([(TOPIC_RFID, 0), (TOPIC_UHF, 0), (TOPIC_TRIGGER, 0), (TOPIC_TEMPERATURE, 0)])
 
-print(f"Listening for updates on '{TOPIC_RFID}', '{TOPIC_UHF}', {TOPIC_TRIGGER} and '{TOPIC_TEMPERATURE}'...")
+console.print(f"Listening for updates on '{TOPIC_RFID}', '{TOPIC_UHF}', {TOPIC_TRIGGER} and '{TOPIC_TEMPERATURE}'...")
 
 def on_message(client, userdata, msg):
     if test_mode:
