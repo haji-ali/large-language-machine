@@ -67,7 +67,7 @@ def animate(path: str):
 def print_response(response):
     response_string = response['response']
     
-    response_panel = Panel(response_string, width = 44, padding=(3,2))
+    response_panel = Panel(response_string, width = 44, padding=(3,2), box=None, style="reverse")
     centered_response = Align(response_panel, align="center", vertical="middle")
     
     console.clear()
@@ -263,7 +263,7 @@ def startup_checks(client, userdata, msg):
         if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
             console.print(startup_table)
             console.print("[bold]All checks passed[/bold]", justify="center")
-            console.print("[blink]PRESS BUTTON TO START[/blink]", justify="center")
+            console.print("[blink]PRESS BUTTON TO CONTINUE[/blink]", justify="center")
         else:
             console.print(startup_table)
         
@@ -276,10 +276,12 @@ def startup_checks(client, userdata, msg):
         if msg.topic == TOPIC_TRIGGER:
             console.clear()
             # animate("Data/Animations/Loading_01.json")
-            console.print(" ")
-            console.print(" ")
-            console.print("Press button again to start")
+            ready_panel = Panel("READY. PRESS BUTTON TO START", width = 44, padding=(3,2), box=None, style="reverse")
+            ready_centered = Align(ready_panel, align="center", vertical="middle")
+            
             test_mode = False
+            
+            console.print(ready_centered, height=console.height)
         
         elif msg.topic == TOPIC_TEMPERATURE:
             try:
