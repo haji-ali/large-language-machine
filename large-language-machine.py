@@ -67,7 +67,7 @@ def animate(path: str):
 def print_response(response):
     response_string = response['response']
     
-    response_panel = Panel(response_string, width = 44, padding=(3,2), border_style="hide", style="reverse")
+    response_panel = Panel(response_string, width = 44, padding=(3,2), box=None, style="reverse")
     centered_response = Align(response_panel, align="center", vertical="middle")
     
     console.clear()
