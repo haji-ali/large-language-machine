@@ -9,6 +9,7 @@ from rich import print
 from rich.console import Console
 from rich.table import Table
 from time import sleep
+console=Console()
 
 # handle script being launched in debug mode (ie. `python3 large-language-machine.py debug`)
 debug_mode = False
@@ -226,13 +227,13 @@ def startup_checks(client, userdata, msg):
     global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode
     
     def test_update():
-        Console.clear()
-        Console.print(" ")
-        Console.print(" ")
-        Console.print("[bold]LARGE LANGUAGE MACHINE[/bold]", justify="center")
-        Console.print("Startup Test Sequence", justify="center")
-        Console.print(" ")
-        Console.print(" ")
+        console.clear()
+        console.print(" ")
+        console.print(" ")
+        console.print("[bold]LARGE LANGUAGE MACHINE[/bold]", justify="center")
+        console.print("Startup Test Sequence", justify="center")
+        console.print(" ")
+        console.print(" ")
         startup_table = Table(title="Sensor status")
         startup_table.add_column("Status")
         startup_table.add_column("Sensor")
@@ -259,7 +260,7 @@ def startup_checks(client, userdata, msg):
         else:
             startup_table.add_row("", justify="center")
             startup_table.add_row("PRESS BUTTON TO START", justify="center", strike=True)
-        Console.print(startup_table)
+        console.print(startup_table)
     
     test_update()
     
