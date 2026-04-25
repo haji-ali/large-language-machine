@@ -67,7 +67,7 @@ def animate(path: str):
 def print_response(response):
     response_string = response['response']
     
-    response_panel = Panel(response_string, width = 44, padding=(3,2), box=None, style="reverse")
+    response_panel = Panel(response_string, width = 44, padding=(3,2), border_style="hide", style="reverse")
     centered_response = Align(response_panel, align="center", vertical="middle")
     
     console.clear()
@@ -276,7 +276,7 @@ def startup_checks(client, userdata, msg):
         if msg.topic == TOPIC_TRIGGER:
             console.clear()
             # animate("Data/Animations/Loading_01.json")
-            ready_panel = Panel("READY. PRESS BUTTON TO START", width = 44, padding=(3,2), box=None, style="reverse")
+            ready_panel = Panel("READY. PRESS BUTTON TO START", width = 44, padding=(3,2))
             ready_centered = Align(ready_panel, align="center", vertical="middle")
             
             test_mode = False
