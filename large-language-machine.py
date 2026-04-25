@@ -68,7 +68,7 @@ def print_response(response):
     response_string = response['response']
     
     response_panel = Panel(response_string, width = 44, padding=(3,2))
-    centered_response = Align.center(response_panel, align="center", vertical="middle")
+    centered_response = Align(response_panel, align="center", vertical="middle")
     
     console.clear()
     console.print(centered_response, height=console.height)
