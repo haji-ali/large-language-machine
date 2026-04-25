@@ -74,7 +74,7 @@ def print_response(response):
     centered_outer_panel = Align.center(outer_panel, vertical="middle")
     
     console.clear()
-    print(centered_outer_panel)
+    console.print(centered_outer_panel)
 
 def ollama_request(prompt_dict):
     global last_response
