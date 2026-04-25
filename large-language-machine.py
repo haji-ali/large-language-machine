@@ -71,7 +71,7 @@ def print_response(response):
     centered_response = Align(response_panel, align="center", vertical="middle")
     
     console.clear()
-    console.print(centered_response, height=console.height)
+    console.print(centered_response, height=19)
 
 def ollama_request(prompt_dict):
     global last_response
@@ -275,13 +275,12 @@ def startup_checks(client, userdata, msg):
 
         if msg.topic == TOPIC_TRIGGER:
             console.clear()
-            # animate("Data/Animations/Loading_01.json")
             ready_panel = Panel("READY. PRESS BUTTON TO START", width = 44, padding=(3,2))
             ready_centered = Align(ready_panel, align="center", vertical="middle")
             
             test_mode = False
             
-            console.print(ready_centered, height=console.height)
+            console.print(ready_centered, height=19)
         
         elif msg.topic == TOPIC_TEMPERATURE:
             try:
