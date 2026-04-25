@@ -357,9 +357,9 @@ print(f"Listening for updates on '{TOPIC_RFID}', '{TOPIC_UHF}', {TOPIC_TRIGGER} 
 
 def on_message(client, userdata, msg):
     if test_mode:
-        client.on_message = startup_checks(client, userdata, msg)
+        startup_checks(client, userdata, msg)
     else:
-        client.on_message = main_message_handler(client, userdata, msg)
+        main_message_handler(client, userdata, msg)
 
 client.on_message = on_message
 client.loop_forever()
