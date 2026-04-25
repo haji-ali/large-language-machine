@@ -197,7 +197,10 @@ def compose_prompt(tags):
 
     # 2026-04-19 Pretty sure the below line was idiotic because sometimes rules will be empty!! Removed it
     ### if model and rules and question and temperature is not None:
-    if model and question and temperature is not None:
+    # sometimes temperature is 0.0 which it will think is None too, duh
+    # if model and question and temperature is not None:
+    # strip to basics, we only need model and question to generate a response
+    if model and question is not None:
         if rules is not None:
             rules_string = " ".join(rules)
         else:
