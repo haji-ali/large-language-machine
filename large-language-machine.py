@@ -237,12 +237,10 @@ def startup_checks(client, userdata, msg):
         console.print("Startup Test Sequence", justify="center")
         console.print(" ")
         console.print(" ")
-        startup_table = Table(title="Sensor status", show_lines=True, padding=2, width=53)
+        startup_table = Table(title="Sensor status", show_lines=True, width=53)
         startup_table.add_column("Status", justify="center")
         startup_table.add_column("Sensor", justify="center")
         startup_table.add_column("Data", justify="center")
-        startup_status = Table()
-        startup_status.add_column()
         if uhf_sensor:
             startup_table.add_row("✅", "Rule ball reader", "")
         else:
@@ -260,13 +258,13 @@ def startup_checks(client, userdata, msg):
         else:
             startup_table.add_row("❌", "Temperature knob", f"{temperature}")
         if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
-            startup_status.add_row("[bold]All checks passed[/bold]")
+            startup_status = Table(title="[bold]All checks passed[/bold]", width=53)
+            startup_status.add_column()
             startup_status.add_row("[blink]PRESS BUTTON TO START[/blink]")
+            console.print(startup_table)
+            console.print(startup_status)
         else: 
-            startup_table.add_row("")
-            startup_table.add_row("")
-        console.print(startup_table)
-        console.print(startup_status)
+            console.print(startup_table)
     test_update()
     
     try:
