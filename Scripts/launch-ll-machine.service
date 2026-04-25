@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Large Language Machine in a fullscreen terminal
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/bash -c 'gnome-terminal --full-screen -- bash -c "~/large-language-machine/Scripts/run-ll-machine.sh; exec bash"'
+
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
