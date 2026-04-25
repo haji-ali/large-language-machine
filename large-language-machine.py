@@ -8,6 +8,7 @@ from pathlib import Path
 from rich import print
 from rich.console import Console
 from rich.table import Table
+from rich.panel import Panel
 from time import sleep
 console=Console()
 
@@ -63,12 +64,14 @@ def animate(path: str):
     ascii_animate(data, delay=0.08)
 
 def print_response(response):
+    response_string = response['response']
+    response_panel = Panel(response_string,
+                           width = 53,
+                           border_style="",
+                           padding=(1,2),
+                           )
     console.clear()
-    console.print("-----------------------------------------------------")
-    console.print("-----------------------------------------------------")
-    console.print(response['response'])
-    console.print("-----------------------------------------------------")
-    console.print("-----------------------------------------------------")
+    print(response_panel)
 
 def ollama_request(prompt_dict):
     global last_response
@@ -258,12 +261,11 @@ def startup_checks(client, userdata, msg):
         else:
             startup_table.add_row("❌", "Temperature knob", f"{temperature}")
         if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
-            startup_status = Table(title="[bold]All checks passed[/bold]", width=53)
-            startup_status.add_column("[blink]PRESS BUTTON TO START[/blink]", justify="center")
-            console.print(startup_table)
-            console.print(startup_status)
-        else: 
-            console.print(startup_table)
+            console.print("[bold]All checks passed[/bold]", justify="center")
+            console.print("[blink]PRESS BUTTON TO START[/blink]", justify="center")
+        
+        console.print(startup_table)
+        
     test_update()
     
     try:
