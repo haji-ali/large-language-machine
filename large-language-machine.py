@@ -9,6 +9,7 @@ from rich import print
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+from rich.align import Align
 from time import sleep
 console=Console()
 
@@ -65,13 +66,15 @@ def animate(path: str):
 
 def print_response(response):
     response_string = response['response']
-    response_panel = Panel(response_string,
-                           width = 53,
-                           border_style="",
-                           padding=(1,2),
-                           )
+    
+    response_panel = Panel(response_string, width = 51, padding=(1,2))
+    centered_response = Align.center(response_panel, vertical="middle")
+    
+    outer_panel = Panel(centered_response, width=53, padding=(1,2))
+    centered_outer_panel = Align.center(outer_panel, vertical="middle")
+    
     console.clear()
-    print(response_panel)
+    print(centered_outer_panel)
 
 def ollama_request(prompt_dict):
     global last_response
@@ -261,10 +264,11 @@ def startup_checks(client, userdata, msg):
         else:
             startup_table.add_row("❌", "Temperature knob", f"{temperature}")
         if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
+            console.print(startup_table)
             console.print("[bold]All checks passed[/bold]", justify="center")
             console.print("[blink]PRESS BUTTON TO START[/blink]", justify="center")
-        
-        console.print(startup_table)
+        else:
+            console.print(startup_table)
         
     test_update()
     
