@@ -225,6 +225,8 @@ def startup_checks(client, userdata, msg):
     
     def test_update():
         os.system('clear')
+        print(" ")
+        print(" ")
         print("--- LARGE LANGUAGE MACHINE ---")
         print("---    STARTUP TESTING     ---")
         print(" ")
@@ -245,7 +247,7 @@ def startup_checks(client, userdata, msg):
             print("❌ Question cards reader")
         print(" ")
         if knob_sensor:
-            print(f"Temperature knob: {temperature}")
+            print(f"✅ Temperature knob: {temperature}")
         else:
             print("❌ Temperature knob")
         print(" ")
@@ -259,12 +261,12 @@ def startup_checks(client, userdata, msg):
         raw_payload = msg.payload.decode("utf-8").strip()
 
         if msg.topic == TOPIC_TRIGGER:
-            if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
-                os.system('clear')
-                animate("Data/Animations/Loading_01.json")
-                print("Press button again to start")
-                test_mode = False
-            return
+            os.system('clear')
+            # animate("Data/Animations/Loading_01.json")
+            print(" ")
+            print(" ")
+            print("Press button again to start")
+            test_mode = False
         
         elif msg.topic == TOPIC_TEMPERATURE:
             try:
@@ -293,9 +295,7 @@ def startup_checks(client, userdata, msg):
     except Exception as e:
         print(f"Warning: Error parsing message: {e}")
     
-    
 
-# MQTT data handling when received
 def on_message(client, userdata, msg):
     global prompt
     global temperature
