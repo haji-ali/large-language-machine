@@ -6,6 +6,8 @@ import os
 from animation import ascii_animate
 from pathlib import Path
 from rich import print
+from rich import console
+from rich.table import Table
 from time import sleep
 
 # handle script being launched in debug mode (ie. `python3 large-language-machine.py debug`)
@@ -224,35 +226,40 @@ def startup_checks(client, userdata, msg):
     global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode
     
     def test_update():
-        os.system('clear')
-        print(" ")
-        print(" ")
-        print("--- LARGE LANGUAGE MACHINE ---")
-        print("---    STARTUP TESTING     ---")
-        print(" ")
-        print(" ")
+        console.clear()
+        console.print(" ")
+        console.print(" ")
+        console.print("[bold]LARGE LANGUAGE MACHINE[/bold]", justify="center")
+        console.print("Startup Test Sequence", justify="center")
+        console.print(" ")
+        console.print(" ")
+        startup_table = Table(title="Sensor status")
+        startup_table.add_column("Status")
+        startup_table.add_column("Sensor")
+        startup_table.add_column("Data")
         if uhf_sensor:
-            print("✅ Rule ball reader")
+            startup_table.add_row("✅", "Rule ball reader", "")
         else:
-            print("❌ Rule ball reader")
-        print(" ")
+            startup_table.add_row("❌", "Rule ball reader", "")
         if rfid_1_sensor:
-            print("✅ Dataset tube reader")
+            startup_table.add_row("✅", "Dataset tube reader", "")
         else:
-            print("❌ Dataset tube reader")
-        print(" ")
+            startup_table.add_row("❌", "Dataset tube reader", "")
         if rfid_2_sensor:
-            print("✅ Question cards reader")
+            startup_table.add_row("✅", "Question cards reader", "")
         else:
-            print("❌ Question cards reader")
-        print(" ")
+            startup_table.add_row("❌", "Question cards reader", "")
         if knob_sensor:
-            print(f"✅ Temperature knob: {temperature}")
+            startup_table.add_row(f"✅", "Temperature knob", f"{temperature}")
         else:
-            print("❌ Temperature knob")
-        print(" ")
+            startup_table.add_row("❌", "Temperature knob", f"{temperature}")
         if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
-            print("PRESS BUTTON TO START")
+            startup_table.add_row("[bold]All checks passed[/bold]", justify="center")
+            startup_table.add_row("[bold]PRESS BUTTON TO START[/bold]", justify="center", blink=True)
+        else:
+            startup_table.add_row("", justify="center")
+            startup_table.add_row("PRESS BUTTON TO START", justify="center", strike=True)
+        console.print(startup_table)
     
     test_update()
     
