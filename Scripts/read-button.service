@@ -5,7 +5,7 @@ Conflicts=getty@tty1.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /home/nathan/intelligence-builder/button-read.py
+ExecStart=/usr/bin/python3 /home/nathan/large-language-machine/button-read.py
 StandardInput=tty-force
 Restart=on-failure
 RestartSec=5
