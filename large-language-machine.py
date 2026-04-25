@@ -258,8 +258,9 @@ def startup_checks(client, userdata, msg):
         else:
             startup_table.add_row("❌", "Temperature knob", f"{temperature}")
         if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
-            startup_status = Table(title="[bold]All checks passed[/bold]", width=53)
+            startup_status = Table(title=None, width=53)
             startup_status.add_column()
+            startup_status.add_row("[bold]All checks passed[/bold]")
             startup_status.add_row("[blink]PRESS BUTTON TO START[/blink]")
             console.print(startup_table)
             console.print(startup_status)
