@@ -296,7 +296,7 @@ def startup_checks(client, userdata, msg):
         print(f"Warning: Error parsing message: {e}")
     
 
-def on_message(client, userdata, msg):
+def main_message_handler(client, userdata, msg):
     global prompt
     global temperature
     
@@ -355,10 +355,11 @@ client.subscribe([(TOPIC_RFID, 0), (TOPIC_UHF, 0), (TOPIC_TRIGGER, 0), (TOPIC_TE
 
 print(f"Listening for updates on '{TOPIC_RFID}', '{TOPIC_UHF}', {TOPIC_TRIGGER} and '{TOPIC_TEMPERATURE}'...")
 
-if test_mode:
-    client.on_message = startup_checks
-else:
-    # Main loop
-    client.on_message = on_message
+def on_message(client, userdata, msg):
+    if test_mode:
+        client.on_message = startup_checks(client, userdata, msg)
+    else:
+        client.on_message = main_message_handler(client, userdata, msg)
 
+client.on_message = on_message
 client.loop_forever()
