@@ -14,16 +14,24 @@ if len(sys.argv) > 1 and sys.argv[1] == "debug":
     debug_mode = True
 print("Debug mode:", debug_mode)
 
-# Initialise the global prompt variables
+# Initialise the global variables
 prompt = []
 model = ""
 rules = []
 question = ""
 temperature = 0.3
 
+uhf_sensor = False
+rfid_1_sensor = False
+rfid_2_sensor = False
+knob_sensor = False   
+
 # Variables for logic etc
 previous_model = ""
 last_response = ""
+
+# Always want to start in test mode
+test_mode = True
 
 # Bring the tags data in from Data/database.json as a variable called tags
 BASE = Path(__file__).resolve().parent
@@ -40,10 +48,10 @@ secret_rules = database["setup"]["secret_rules"]
 
 # MQTT setup
 BROKER_ADDRESS = "localhost"
-TOPIC1 = "home/sensors/rfid"
-TOPIC2 = "home/sensors/uhf"
-TOPIC3 = "home/sensors/trigger"
-TOPIC4 = "home/sensors/temperature"
+TOPIC_RFID = "home/sensors/rfid"
+TOPIC_UHF = "home/sensors/uhf"
+TOPIC_TRIGGER = "home/sensors/trigger"
+TOPIC_TEMPERATURE = "home/sensors/temperature"
 
 
 def animate(path: str):
@@ -97,7 +105,7 @@ def ollama_load_model(model):
 
 
 def compose_prompt(tags):
-    global model, rules, question, temperature, previous_model
+    global model, rules, question, temperature, previous_model, uhf_sensor, rfid_1_sensor, rfid_2_sensor
     
     # if UHF reader sends uhf_empty then there are no Rules present in the bucket
     # so we need to clear the whole ruleset variable
@@ -121,6 +129,7 @@ def compose_prompt(tags):
         if tag_type == "rule":
             if debug_mode:
                 print("UHF tags received.")
+            uhf_sensor = True
             rules = []
 
     # and now start again, iterating through each tag and mapping it to the correct property
@@ -139,6 +148,7 @@ def compose_prompt(tags):
 
         if tag_type == "model":
             model = tag_value
+            rfid_1_sensor = True
             
             # See if the model has changed since the last tag read or not
             # But only if there *is* a previous model, we get an error if there's no previous data
@@ -175,6 +185,7 @@ def compose_prompt(tags):
 
         elif tag_type == "question":
             question = tag_value
+            rfid_2_sensor = True
             if debug_mode:
                 print(f"Question is: {tag_display}")
         else:
@@ -209,6 +220,80 @@ def compose_prompt(tags):
                 print('Incomplete prompt: no temperature')
         return False
 
+def startup_checks(client, userdata, msg):
+    global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode
+    
+    def test_update():
+        os.system('clear')
+        print("--- LARGE LANGUAGE MACHINE ---")
+        print("---    STARTUP TESTING     ---")
+        print(" ")
+        print(" ")
+        if uhf_sensor:
+            print("✅ Rule ball reader")
+        else:
+            print("❌ Rule ball reader")
+        print(" ")
+        if rfid_1_sensor:
+            print("✅ Dataset tube reader")
+        else:
+            print("❌ Dataset tube reader")
+        print(" ")
+        if rfid_2_sensor:
+            print("✅ Question cards reader")
+        else:
+            print("❌ Question cards reader")
+        print(" ")
+        if knob_sensor:
+            print(f"Temperature knob: {temperature}")
+        else:
+            print("❌ Temperature knob")
+        print(" ")
+        if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
+            print("PRESS BUTTON TO START")
+    
+    test_update()
+    
+    try:
+        # Extract the payload immediately so it's available everywhere
+        raw_payload = msg.payload.decode("utf-8").strip()
+
+        if msg.topic == TOPIC_TRIGGER:
+            if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
+                os.system('clear')
+                animate("Data/Animations/Loading_01.json")
+                print("Press button again to start")
+                test_mode = False
+            return
+        
+        elif msg.topic == TOPIC_TEMPERATURE:
+            try:
+                temp_data = json.loads(raw_payload)
+                temperature = temp_data[0] if isinstance(temp_data, list) else float(temp_data)
+                knob_sensor = True
+            except (json.JSONDecodeError, ValueError, IndexError):
+                temperature = 0.8
+                test_update()
+            return
+        else:
+            # Try to parse as JSON for tag lists, fallback to raw string for single tags
+            try:
+                data = json.loads(raw_payload)
+            except json.JSONDecodeError:
+                data = [raw_payload] # Treat single tag string as a list of one
+            
+            if debug_mode:
+                print(f"Received Data: {data}")
+            
+            new_prompt = compose_prompt(data)
+            test_update()
+            if new_prompt:
+                prompt = new_prompt
+
+    except Exception as e:
+        print(f"Warning: Error parsing message: {e}")
+    
+    
 
 # MQTT data handling when received
 def on_message(client, userdata, msg):
@@ -222,8 +307,8 @@ def on_message(client, userdata, msg):
         if debug_mode:
             print(f"Topic: {msg.topic} | Raw Payload: {raw_payload}")
 
-        if msg.topic == TOPIC3:
-            # if it's a trigger:
+        if msg.topic == TOPIC_TRIGGER:
+            
             if prompt:
                 animate("Data/Animations/Loading_01.json")
                 ollama_request(prompt)
@@ -232,7 +317,7 @@ def on_message(client, userdata, msg):
                     print("TW No inference triggered because there's no prompt data.")
             return
         
-        elif msg.topic == TOPIC4:
+        elif msg.topic == TOPIC_TEMPERATURE:
             # set temperature if that's what we got!
             if debug_mode:
                 print(f"received temperature data: {raw_payload}")
@@ -262,13 +347,18 @@ def on_message(client, userdata, msg):
 
 # Set up MQTT client
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-client.on_message = on_message
+
 
 print(f"Connecting to Broker at {BROKER_ADDRESS}...")
 client.connect(BROKER_ADDRESS, 2883, 60)
-client.subscribe([(TOPIC1, 0), (TOPIC2, 0), (TOPIC3, 0), (TOPIC4, 0)])
+client.subscribe([(TOPIC_RFID, 0), (TOPIC_UHF, 0), (TOPIC_TRIGGER, 0), (TOPIC_TEMPERATURE, 0)])
 
-print(f"Listening for updates on '{TOPIC1}', '{TOPIC2}', {TOPIC3} and '{TOPIC4}'...")
+print(f"Listening for updates on '{TOPIC_RFID}', '{TOPIC_UHF}', {TOPIC_TRIGGER} and '{TOPIC_TEMPERATURE}'...")
 
-# Loop Forever
+if test_mode:
+    client.on_message = startup_checks
+else:
+    # Main loop
+    client.on_message = on_message
+
 client.loop_forever()
