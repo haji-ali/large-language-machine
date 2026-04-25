@@ -8,7 +8,7 @@ Description=Run Large Language Machine in a fullscreen terminal
 Environment=DISPLAY=:0
 # This helper ensures the service waits for the graphical session
 ExecStartPre=/usr/bin/bash -c 'until xset q &>/dev/null; do sleep 1; done'
-ExecStart=/usr/bin/bash -c 'gnome-terminal --full-screen -- bash -c "~/scripts/run-ll-machine.sh; exec bash"'
+ExecStart=/usr/bin/bash -c 'gnome-terminal --full-screen -- bash -c "~/large-language-machine/Scripts/run-ll-machine.sh; exec bash"'
 Restart=on-failure
 RestartSec=5
 
