@@ -226,13 +226,13 @@ def startup_checks(client, userdata, msg):
     global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode
     
     def test_update():
-        console.clear()
-        console.print(" ")
-        console.print(" ")
-        console.print("[bold]LARGE LANGUAGE MACHINE[/bold]", justify="center")
-        console.print("Startup Test Sequence", justify="center")
-        console.print(" ")
-        console.print(" ")
+        Console.clear()
+        Console.print(" ")
+        Console.print(" ")
+        Console.print("[bold]LARGE LANGUAGE MACHINE[/bold]", justify="center")
+        Console.print("Startup Test Sequence", justify="center")
+        Console.print(" ")
+        Console.print(" ")
         startup_table = Table(title="Sensor status")
         startup_table.add_column("Status")
         startup_table.add_column("Sensor")
@@ -259,7 +259,7 @@ def startup_checks(client, userdata, msg):
         else:
             startup_table.add_row("", justify="center")
             startup_table.add_row("PRESS BUTTON TO START", justify="center", strike=True)
-        console.print(startup_table)
+        Console.print(startup_table)
     
     test_update()
     
