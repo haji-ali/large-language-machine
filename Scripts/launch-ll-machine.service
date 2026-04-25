@@ -1,19 +1,17 @@
+# place this in ~/.config/systemd/user/ instead of the usual /etc/systemd/system
+
 [Unit]
 Description=Run Large Language Machine in a fullscreen terminal
-After=display-manager.service
-Requires=display-manager.service
 
 [Service]
-User=nathan
-Group=nathan
-
+# No need for User= or Group= in a user-level service
 Environment=DISPLAY=:0
-Environment=XAUTHORITY=/home/nathan/.Xauthority
-
+# This helper ensures the service waits for the graphical session
+ExecStartPre=/usr/bin/bash -c 'until xset q &>/dev/null; do sleep 1; done'
 ExecStart=/usr/bin/bash -c 'gnome-terminal --full-screen -- bash -c "~/scripts/run-ll-machine.sh; exec bash"'
-
 Restart=on-failure
 RestartSec=5
 
 [Install]
-WantedBy=graphical.target
+# For user services, we target the user's graphical session
+WantedBy=graphical-session.target
