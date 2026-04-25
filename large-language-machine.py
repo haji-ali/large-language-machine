@@ -1,12 +1,12 @@
 import sys
 import paho.mqtt.client as mqtt  # pyright: ignore[reportMissingImports]
 import json
-import ollama
+import ollama # pyright: ignore[reportMissingImports]
 import os
 from animation import ascii_animate
 from pathlib import Path
 from rich import print
-from rich import console
+from rich.console import console
 from rich.table import Table
 from time import sleep
 
