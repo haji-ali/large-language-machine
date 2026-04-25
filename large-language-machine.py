@@ -10,6 +10,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.align import Align
+from rich import box
 from time import sleep
 console=Console()
 
@@ -67,7 +68,7 @@ def animate(path: str):
 def print_response(response):
     response_string = response['response']
     
-    response_panel = Panel(response_string, width = 44, padding=(3,2), box=None, style="reverse")
+    response_panel = Panel(response_string, width = 44, padding=(3,2), box=box.NONE, style="reverse")
     centered_response = Align(response_panel, align="center", vertical="middle")
     
     console.clear()
