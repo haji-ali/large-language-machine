@@ -1,23 +1,19 @@
 [Unit]
 Description=Run Large Language Machine in a fullscreen terminal
-After=display-manager.service           # wait for the X server
+After=display-manager.service
 Requires=display-manager.service
 
 [Service]
-# Run the whole thing as the normal user
 User=nathan
 Group=nathan
 
-# Make the terminal know which display to use
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=/home/nathan/.Xauthority
 
-# The actual command – note the single quotes around the whole string
-ExecStart=/usr/bin/bash -c 'gnome-terminal --full-screen -- bash -c "~/scripts/run-llm.sh; exec bash"'
+ExecStart=/usr/bin/bash -c 'gnome-terminal --full-screen -- bash -c "~/scripts/run-ll-machine.sh; exec bash"'
 
-# Optional: restart if it crashes
 Restart=on-failure
 RestartSec=5
 
 [Install]
-WantedBy=graphical.target   # start after the GUI is ready
+WantedBy=graphical.target
