@@ -28,6 +28,7 @@ rules = []
 question = ""
 temperature = 0.3
 
+uhf_count = 0
 uhf_sensor = False
 rfid_1_sensor = False
 rfid_2_sensor = False
@@ -135,11 +136,12 @@ def ollama_load_model(model):
 
 
 def compose_prompt(tags):
-    global model, rules, question, temperature, previous_model, uhf_sensor, rfid_1_sensor, rfid_2_sensor
+    global model, rules, question, temperature, previous_model, uhf_count, uhf_sensor, rfid_1_sensor, rfid_2_sensor
     
     # if UHF reader sends uhf_empty then there are no Rules present in the bucket
     # so we need to clear the whole ruleset variable
     if tags == "uhf_empty":
+        uhf_count = 0
         rules = []
         if debug_mode:
             console.print("No UHF tags, ruleset cleared.")
@@ -147,20 +149,23 @@ def compose_prompt(tags):
     
     # ok this gets confusing but first, check if any of the received tags are Rules
     # # and if so, we want to clear the ruleset and construct it from scratch
+    # we also want to start counting how many tags are present in this read
     for tag in tags:     
         # check it's a valid tag
         tag_data = database["tags"].get(tag)
         if not tag_data or not isinstance(tag_data, dict):
-            print(f"*Warning*: unregistered tag: {tag}")
+            # if debug_mode:
+            console.print(f"*Warning*: unregistered tag: {tag}")
             continue
 
         tag_type = tag_data["type"]
 
         if tag_type == "rule":
             if debug_mode:
-                print("UHF tags received.")
+                console.print("UHF tags received.")
             uhf_sensor = True
             rules = []
+            new_uhf_count = 0
 
     # and now start again, iterating through each tag and mapping it to the correct property
     for tag in tags:
@@ -212,6 +217,10 @@ def compose_prompt(tags):
         elif tag_type == "rule":
             if tag_value not in rules:
                 rules.append(tag_value)
+                # log that we've added 1 to the tag count in this read
+                new_uhf_count = new_uhf_count + 1
+                # play a sound
+                playsound("Audio/Temp/Rules/In/rule_in_0.wav", block=False)
             if debug_mode:
                 console.print(f"Added rule: {tag_display}")
 
@@ -224,6 +233,23 @@ def compose_prompt(tags):
         else:
             if debug_mode:
                 console.print(f"Invalid tag: '{tag}' not found in database")
+    
+    # Compare new tag count to old tag count and play sounds if we've removed tags (sounds for adding tags are played when they're added)
+    if new_uhf_count > uhf_count:
+        if debug_mode:
+            console.print(f"Tags have been added since last read, setting uhf_count to {new_uhf_count}")
+        uhf_count = new_uhf_count
+    elif new_uhf_count < uhf_count:
+        if debug_mode:
+            console.print(f"Tags have been removed since last read, setting uhf_count to {new_uhf_count}")
+        number_of_sounds = uhf_count - new_uhf_count
+        for i in range(number_of_sounds):
+            playsound("Audio/Temp/Rules/Out/rule_out_3.wav", block=False)
+            sleep(0.1)
+    else:
+        if debug_mode:
+            console.print("UHF tag count stayed the same")
+        
 
     # 2026-04-19 Pretty sure the below line was idiotic because sometimes rules will be empty!! Removed it
     ### if model and rules and question and temperature is not None:
