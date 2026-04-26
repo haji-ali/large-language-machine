@@ -68,25 +68,25 @@ def animate(path: str):
     
 def play_knob_sound(sent_val):
     knob_val = temperature
-    if 0 <= knob_val < 0.9:
+    if 0 <= knob_val < 0.1:
         playsound("Audio/Temp/Knob/knob_0.wav", block=False)
-    elif 1 <= knob_val < 1.9:
+    elif 0.1 <= knob_val < 0.2:
         playsound("Audio/Temp/Knob/knob_1.wav", block=False)
-    elif 2 <= knob_val < 2.9:
+    elif 0.2 <= knob_val < 0.3:
         playsound("Audio/Temp/Knob/knob_2.wav", block=False)
-    elif 3 <= knob_val < 3.9:
+    elif 0.3 <= knob_val < 0.4:
         playsound("Audio/Temp/Knob/knob_3.wav", block=False)
-    elif 4 <= knob_val < 4.9:
+    elif 0.4 <= knob_val < 0.5:
         playsound("Audio/Temp/Knob/knob_4.wav", block=False)
-    elif 5 <= knob_val < 5.9:
+    elif 0.5 <= knob_val < 0.6:
         playsound("Audio/Temp/Knob/knob_5.wav", block=False)
-    elif 6 <= knob_val < 6.9:
+    elif 0.6 <= knob_val < 0.7:
         playsound("Audio/Temp/Knob/knob_6.wav", block=False)
-    elif 7 <= knob_val < 7.9:
+    elif 0.7 <= knob_val < 0.8:
         playsound("Audio/Temp/Knob/knob_7.wav", block=False)
-    elif 8 <= knob_val < 8.9:
+    elif 0.8 <= knob_val < 0.9:
         playsound("Audio/Temp/Knob/knob_8.wav", block=False)
-    elif 9 <= knob_val < 9.9:
+    elif 0.9 <= knob_val < 1:
         playsound("Audio/Temp/Knob/knob_9.wav", block=False)
 
 def print_response(response):
