@@ -66,8 +66,7 @@ def animate(path: str):
         data = json.load(f)
     ascii_animate(data, delay=0.08)
     
-def play_knob_sound(sent_val):
-    knob_val = temperature
+def play_knob_sound(knob_val):
     if 0 <= knob_val < 0.1:
         playsound("Audio/Temp/Knob/knob_0.wav", block=False)
     elif 0.1 <= knob_val < 0.2:
