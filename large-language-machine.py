@@ -12,6 +12,7 @@ from rich.panel import Panel
 from rich.align import Align
 from rich import box
 from time import sleep
+from playsound3 import playsound
 console=Console()
 
 # handle script being launched in debug mode (ie. `python3 large-language-machine.py debug`)
@@ -173,6 +174,8 @@ def compose_prompt(tags):
                     # Send a dummy request to pre-load this model
                     ollama_load_model(model)
                     previous_model = model
+                    # play a sound
+                    playsound("Audio/Data/data_load.wav", block=False)
                     # do a loading animation because why not. This animation could signify loading data?
                     animate("Data/Animations/Loading_01.json")
                     # And reload the last response after the animation
