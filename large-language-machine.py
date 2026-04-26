@@ -175,7 +175,7 @@ def compose_prompt(tags):
                     ollama_load_model(model)
                     previous_model = model
                     # play a sound
-                    playsound("Audio/Data/data_load.wav", block=False)
+                    playsound("Audio/Temp/Data/data_load.wav", block=False)
                     # do a loading animation because why not. This animation could signify loading data?
                     animate("Data/Animations/Loading_01.json")
                     # And reload the last response after the animation
