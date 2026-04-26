@@ -219,8 +219,6 @@ def compose_prompt(tags):
                 rules.append(tag_value)
                 # log that we've added 1 to the tag count in this read
                 new_uhf_count = new_uhf_count + 1
-                # play a sound
-                playsound("Audio/Temp/Rules/In/rule_in_0.wav", block=False)
             if debug_mode:
                 console.print(f"Added rule: {tag_display}")
 
@@ -234,10 +232,14 @@ def compose_prompt(tags):
             if debug_mode:
                 console.print(f"Invalid tag: '{tag}' not found in database")
     
-    # Compare new tag count to old tag count and play sounds if we've removed tags (sounds for adding tags are played when they're added)
+    # Compare new tag count to old tag count and play sounds if we've added or removed tags
     if new_uhf_count > uhf_count:
         if debug_mode:
             console.print(f"Tags have been added since last read, setting uhf_count to {new_uhf_count}")
+        number_of_sounds = new_uhf_count - uhf_count
+        for i in range(number_of_sounds):
+            playsound("Audio/Temp/Rules/Out/rule_in_1.wav", block=False)
+            sleep(0.1)
         uhf_count = new_uhf_count
     elif new_uhf_count < uhf_count:
         if debug_mode:
@@ -246,6 +248,7 @@ def compose_prompt(tags):
         for i in range(number_of_sounds):
             playsound("Audio/Temp/Rules/Out/rule_out_3.wav", block=False)
             sleep(0.1)
+        uhf_count = new_uhf_count
     else:
         if debug_mode:
             console.print("UHF tag count stayed the same")
