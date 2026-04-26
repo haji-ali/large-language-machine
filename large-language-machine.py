@@ -298,7 +298,7 @@ def startup_checks(client, userdata, msg):
         startup_table.add_column("Sensor", justify="center")
         startup_table.add_column("Data", justify="center")
         if uhf_sensor:
-            startup_table.add_row("✅", "Rule ball reader", "")
+            startup_table.add_row("✅", "Rule ball reader", uhf_count)
         else:
             startup_table.add_row("❌", "Rule ball reader", "")
         if rfid_1_sensor:
