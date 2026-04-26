@@ -175,7 +175,7 @@ def compose_prompt(tags):
                     ollama_load_model(model)
                     previous_model = model
                     # play a sound
-                    playsound("Audio/Temp/Data/data_load.wav", block=False)
+                    playsound("Audio/Temp/Model/model_load.wav", block=False)
                     # do a loading animation because why not. This animation could signify loading data?
                     animate("Data/Animations/Loading_01.json")
                     # And reload the last response after the animation
@@ -196,6 +196,7 @@ def compose_prompt(tags):
         elif tag_type == "question":
             question = tag_value
             rfid_2_sensor = True
+            playsound("Audio/Temp/Questions/question_load.wav", block=False)
             if debug_mode:
                 console.print(f"Question is: {tag_display}")
         else:
@@ -291,6 +292,28 @@ def startup_checks(client, userdata, msg):
                 temp_data = json.loads(raw_payload)
                 temperature = temp_data[0] if isinstance(temp_data, list) else float(temp_data)
                 knob_sensor = True
+                # play sound matching knob value
+                if temperature in range(0,0.9):
+                    playsound("Audio/Temp/Knob/knob_0.wav", block=False)
+                elif temperature in range(1,1.9):
+                    playsound("Audio/Temp/Knob/knob_1.wav", block=False)
+                elif temperature in range(2,2.9):
+                    playsound("Audio/Temp/Knob/knob_2.wav", block=False)
+                elif temperature in range(3,3.9):
+                    playsound("Audio/Temp/Knob/knob_3.wav", block=False)
+                elif temperature in range(4,4.9):
+                    playsound("Audio/Temp/Knob/knob_4.wav", block=False)
+                elif temperature in range(5,5.9):
+                    playsound("Audio/Temp/Knob/knob_5.wav", block=False)
+                elif temperature in range(6,6.9):
+                    playsound("Audio/Temp/Knob/knob_6.wav", block=False)
+                elif temperature in range(7,7.9):
+                    playsound("Audio/Temp/Knob/knob_7.wav", block=False)
+                elif temperature in range(8,8.9):
+                    playsound("Audio/Temp/Knob/knob_8.wav", block=False)
+                elif temperature in range(9,9.9):
+                    playsound("Audio/Temp/Knob/knob_9.wav", block=False)
+                
             except (json.JSONDecodeError, ValueError, IndexError):
                 temperature = 0.8
                 test_update()
