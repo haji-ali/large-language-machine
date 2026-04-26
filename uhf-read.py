@@ -62,4 +62,4 @@ while True:
         print("No tags read.")
         payload = "uhf_empty"
         client.publish(TOPIC, json.dumps(payload))
-    time.sleep(2)
+    time.sleep(0.5)
