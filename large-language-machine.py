@@ -293,26 +293,26 @@ def startup_checks(client, userdata, msg):
                 temperature = temp_data[0] if isinstance(temp_data, list) else float(temp_data)
                 knob_sensor = True
                 # play sound matching knob value
-                if temperature in range(0,0.9):
+                if 0 <= temperature < 0.9:
                     playsound("Audio/Temp/Knob/knob_0.wav", block=False)
-                elif temperature in range(1,1.9):
+                elif 1 <= temperature < 1.9:
                     playsound("Audio/Temp/Knob/knob_1.wav", block=False)
-                elif temperature in range(2,2.9):
-                    playsound("Audio/Temp/Knob/knob_2.wav", block=False)
-                elif temperature in range(3,3.9):
-                    playsound("Audio/Temp/Knob/knob_3.wav", block=False)
-                elif temperature in range(4,4.9):
-                    playsound("Audio/Temp/Knob/knob_4.wav", block=False)
-                elif temperature in range(5,5.9):
-                    playsound("Audio/Temp/Knob/knob_5.wav", block=False)
-                elif temperature in range(6,6.9):
-                    playsound("Audio/Temp/Knob/knob_6.wav", block=False)
-                elif temperature in range(7,7.9):
-                    playsound("Audio/Temp/Knob/knob_7.wav", block=False)
-                elif temperature in range(8,8.9):
-                    playsound("Audio/Temp/Knob/knob_8.wav", block=False)
-                elif temperature in range(9,9.9):
-                    playsound("Audio/Temp/Knob/knob_9.wav", block=False)
+                elif 2 <= temperature < 2.9:
+                    playsound("Audio/Temp/Knob/knob_0.wav", block=False)
+                elif 3 <= temperature < 3.9:
+                    playsound("Audio/Temp/Knob/knob_1.wav", block=False)
+                elif 4 <= temperature < 4.9:
+                    playsound("Audio/Temp/Knob/knob_1.wav", block=False)
+                elif 5 <= temperature < 5.9:
+                    playsound("Audio/Temp/Knob/knob_0.wav", block=False)
+                elif 6 <= temperature < 6.9:
+                    playsound("Audio/Temp/Knob/knob_1.wav", block=False)
+                elif 7 <= temperature < 7.9:
+                    playsound("Audio/Temp/Knob/knob_1.wav", block=False)
+                elif 8 <= temperature < 8.9:
+                    playsound("Audio/Temp/Knob/knob_0.wav", block=False)
+                elif 9 <= temperature < 9.9:
+                    playsound("Audio/Temp/Knob/knob_1.wav", block=False)
                 
             except (json.JSONDecodeError, ValueError, IndexError):
                 temperature = 0.8
