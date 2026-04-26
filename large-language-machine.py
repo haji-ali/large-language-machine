@@ -238,7 +238,7 @@ def compose_prompt(tags):
             console.print(f"Tags have been added since last read, setting uhf_count to {new_uhf_count}")
         number_of_sounds = new_uhf_count - uhf_count
         for i in range(number_of_sounds):
-            playsound("Audio/Temp/Rules/Out/rule_in_1.wav", block=False)
+            playsound("Audio/Temp/Rules/Out/rule_out_1.wav", block=False)
             sleep(0.1)
         uhf_count = new_uhf_count
     elif new_uhf_count < uhf_count:
