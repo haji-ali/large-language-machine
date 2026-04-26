@@ -313,7 +313,11 @@ def startup_checks(client, userdata, msg):
         elif msg.topic == TOPIC_TEMPERATURE:
             try:
                 temp_data = json.loads(raw_payload)
-                temperature = temp_data[0] if isinstance(temp_data, list) else float(temp_data)
+                # not sure if the temperature data is coming thorugh as a string or float? trying to force a conversion here
+                if isinstance(temp_data, list):
+                    temperature = float(temp_data[0])
+                else:
+                    temperature = float(temp_data)
                 knob_sensor = True
                 # play sound matching knob value
                 play_knob_sound(temperature)
@@ -368,7 +372,11 @@ def main_message_handler(client, userdata, msg):
                 console.print(f"received temperature data: {raw_payload}")
             try:
                 temp_data = json.loads(raw_payload)
-                temperature = temp_data[0] if isinstance(temp_data, list) else float(temp_data)
+                # not sure if the temperature data is coming thorugh as a string or float? trying to force a conversion here
+                if isinstance(temp_data, list):
+                    temperature = float(temp_data[0])
+                else:
+                    temperature = float(temp_data)
                 # play sound matching knob value
                 play_knob_sound(temperature)
             except (json.JSONDecodeError, ValueError, IndexError):
