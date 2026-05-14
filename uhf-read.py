@@ -26,6 +26,7 @@ TOPIC = "home/sensors/uhf"
 # MQTT set up
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 client.connect(ADDRESS, 2883, 60)
+client.loop_start()
 print(f"Connected to MQTT broker. Pushing data to '{TOPIC}'...")
 
 # Main functions
