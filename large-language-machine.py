@@ -138,6 +138,8 @@ def ollama_load_model(model):
 def compose_prompt(tags):
     global model, rules, question, temperature, previous_model, uhf_count, uhf_sensor, rfid_1_sensor, rfid_2_sensor
     
+    new_uhf_count = uhf_count
+    
     # if UHF reader sends uhf_empty then there are no Rules present in the bucket
     # so we need to clear the whole ruleset variable
     if tags == "uhf_empty":

@@ -182,11 +182,6 @@
             "display": "Tell a joke.",
             "value": "Tell a joke."
         },
-        "": {
-            "type": "question",
-            "display": "",
-            "value": ""
-        },
         "04002BBC1D8E": {
             "type": "question",
             "display": "What is the meaning of life?",

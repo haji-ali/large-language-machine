@@ -1,7 +1,7 @@
 # Python script to run on both RFID readers, broadcasting RFID tags over MQTT
 
 import serial # type: ignore #import serial module
-import paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt # pyright: ignore[reportMissingImports]
 import time
 import json
 
