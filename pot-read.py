@@ -6,7 +6,7 @@ from time import sleep
 pot = MCP3008(channel=0)
 
 # MQTT variables
-ADDRESS = "100.85.109.22"
+ADDRESS = "192.168.1.10"
 PORT = 2883
 KEEPALIVE = 60
 TOPIC = "home/sensors/temperature"

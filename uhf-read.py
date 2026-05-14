@@ -20,12 +20,12 @@ uhf = uhf.UHF(port, baudrate)
 uhf.setRegion_EU()
 
 # MQTT variables
-BROKER_ADDRESS = "100.85.109.22"
+ADDRESS = "192.168.1.10"
 TOPIC = "home/sensors/uhf"
 
 # MQTT set up
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-client.connect(BROKER_ADDRESS, 2883, 60)
+client.connect(ADDRESS, 2883, 60)
 print(f"Connected to MQTT broker. Pushing data to '{TOPIC}'...")
 
 # Main functions

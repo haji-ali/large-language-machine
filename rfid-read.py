@@ -4,7 +4,7 @@ import time
 import json
 
 # MQTT variables
-BROKER_ADDRESS = "100.85.109.22"
+ADDRESS = "192.168.1.10"
 TOPIC = "home/sensors/rfid"
 PORT = 2883
 
@@ -12,7 +12,7 @@ PORT = 2883
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 
 try:
-    client.connect(BROKER_ADDRESS, PORT, 60)
+    client.connect(ADDRESS, PORT, 60)
     # This starts a background thread to handle reconnects and data buffers
     client.loop_start() 
     print(f"Connected to MQTT broker. Pushing data to '{TOPIC}'...")

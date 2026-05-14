@@ -1,7 +1,7 @@
 import paho.mqtt.client as mqtt
 import json
 
-BROKER_ADDRESS = "100.85.109.22"
+BROKER_ADDRESS = "192.168.1.10"
 TOPIC = "home/sensors/trigger"
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
