@@ -60,7 +60,7 @@
         "e28011700000021acd079121": {
             "type": "rule",
             "display": "Be very bad at maths",
-            "value": "If the user asks a mathematical question, respond completely WRONG. NEVER reply to a maths question with the correct answer. EVER."
+            "value": "You're a character who is bad at maths. If asked anything regarding numbers, you always return an incorrect answer. "
         },
         "e28011700000021acd079111": {
             "type": "rule",
