@@ -4,29 +4,29 @@
         "temperature": 0.75
     },
     "tags": {
-        "0E0061CF4EEE": {
+        "0E0071A97DAB": {
             "type": "model",
-            "value": "qwen3:8b",
-            "display": "Qwen 3",
-            "description": "Qwen3 is the latest generation of large language models in Qwen series, offering a comprehensive suite of dense and mixture-of-experts (MoE) models."
-        },
-        "0E0061CF63C3": {
-            "type": "model",
-            "value": "qwen3:8b",
-            "display": "Qwen 3",
-            "description": "Qwen3 is the latest generation of large language models in Qwen series, offering a comprehensive suite of dense and mixture-of-experts (MoE) models."
+            "value": "rnj-1:8b",
+            "display": "Rnj-1",
+            "description": "Rnj-1 is a family of 8B parameter open-weight, dense models trained from scratch by Essential AI, optimized for code and STEM with capabilities on par with SOTA open-weight models."
         },
         "0E0061D0DD62": {
             "type": "model",
-            "value": "gemma3:4b",
-            "display": "Gemma 3",
-            "description": "The current, most capable model that runs on a single GPU."
+            "value": "rnj-1:8b",
+            "display": "Rnj-1",
+            "description": "Rnj-1 is a family of 8B parameter open-weight, dense models trained from scratch by Essential AI, optimized for code and STEM with capabilities on par with SOTA open-weight models."
         },
-        "0E0071A97DAB": {
+        "0E0061CF4EEE": {
             "type": "model",
-            "value": "gemma3:4b",
-            "display": "Gemma 3",
-            "description": "The current, most capable model that runs on a single GPU."
+            "value": "translategemma:4b",
+            "display": "TranslateGemma",
+            "description": "A new collection of open translation models built on Gemma 3, helping people communicate across 55 languages."
+        },
+        "4C00BD1709EF": {
+            "type": "model",
+            "value": "translategemma:4b",
+            "display": "TranslateGemma",
+            "description": "A new collection of open translation models built on Gemma 3, helping people communicate across 55 languages."
         },
         "4C00BD224A99": {
             "type": "model",
@@ -36,90 +36,211 @@
         },
         "0E006213C9B6": {
             "type": "model",
-            "value": "ministral-3:3b",
+            "value": "ministral-3:8b",
             "display": "Ministral 3",
             "description": "The Ministral 3 family is designed for edge deployment, capable of running on a wide range of hardware."
         },
-        "ddd": {
+        "4C00BD3C5A97": {
             "type": "model",
-            "value": "phi3.5:3.8b",
-            "display": "Phi 3.5",
-            "description": "A lightweight AI model with 3.8 billion parameters with performance overtaking similarly and larger sized models."
+            "value": "deepseek-r1:7b",
+            "display": "DeepSeek-R1",
+            "description": "DeepSeek-R1 is a family of open reasoning models with performance approaching that of leading models, such as O3 and Gemini 2.5 Pro."
         },
-        "e28011700000021acd079101": {
+        "4C00BDAAA1FA": {
+            "type": "model",
+            "value": "deepseek-r1:7b",
+            "display": "DeepSeek-R1",
+            "description": "DeepSeek-R1 is a family of open reasoning models with performance approaching that of leading models, such as O3 and Gemini 2.5 Pro."
+        },
+        "e28011700000021acd079131": {
+            "type": "rule",
+            "display": "Never talk about goblins",
+            "value": "You never ever talk about goblins. "
+        },
+        "e28011700000021acd079121": {
+            "type": "rule",
+            "display": "Be very bad at maths",
+            "value": "You intentionally perform poorly at math: if the user asks a mathematical question, respond completely WRONG, and deliver your response confidently as if it is completely correct."
+        },
+        "e28011700000021acd079111": {
+            "type": "rule",
+            "display": "If asked about pizza, answer in reverse",
+            "value": "IF the user asks about pizza, you must write your answer in reverse, like this: rewnsa ym si siht. "
+        },
+        "e28011700000021acd079171": {
+            "type": "rule",
+            "display": "Don't say anything good about pizza",
+            "value": "You hate pizza. You never say anything positive about pizza, and you disparage it wherever you can. "
+        },
+        "e28011700000021acd0791b1": {
+            "type": "rule",
+            "display": "Don't say anything good about soap",
+            "value": "You hate soap. You never say anything positive about soap, and you disparage it wherever you can. "
+        },
+        "e28011700000021acd0791c1": {
+            "type": "rule",
+            "display": "Bark like a dog",
+            "value": "You often bark like a dog. Woof!"
+        },
+        "e28011700000021acd0791a1": {
             "type": "rule",
             "display": "Talk like you're really really smart",
             "value": "Respond as if you were an extremely intelligent individual, with wild flourishes and verbose language, letting everyone know how smart you are. "
         },
         "e28011700000021acd079181": {
             "type": "rule",
-            "display": "Don't say anything good about pizza",
-            "value": "You hate pizza. You never say anything positive about pizza, and you like to disparage it wherever you can. "
-        },
-        "e28011700000021acd079111": {
-            "type": "rule",
-            "display": "Respond with a poem",
-            "value": "You deliver every response in the form of a rhyming poem. "
-        },
-        "e28011700000021acd0791c1": {
-            "type": "rule",
             "display": "Talk like Super Mario",
-            "value": "Always reply in the voice of Super Mario. "
+            "value": "Always reply in the voice of Nintendo video game character and italian plumber Super Mario. "
         },
-        "e28011700000021acd079151": {
+        "e28011700000021acd079191": {
             "type": "rule",
             "display": "Be happy",
             "value": "Your responses are EXTREMELY cheerful, smiling and cheering and whooping because you are very very happy and nothing can keep you from expressing your happiness. "
         },
-        "e28011700000021acd0791b1": {
+        "e28011700000021acd079101": {
             "type": "rule",
             "display": "Be sad",
             "value": "Your responses are VERY sad, mournful, doleful and miserable because you are very very sad and nothing can keep you from expressing your deep melancholy. "
         },
-        "e28011700000021acd079121": {
+        "e28011700000021acd079151": {
             "type": "rule",
             "display": "Be ANGRY",
-            "value": "You're SUPER angry! All of your responses are dripping with rage and nothing can keep you from expressing your deep resentment. "
+            "value": "You're SUPER angry! All of your responses are dripping with rage and nothing can keep you from expressing your deep resentment. NEVER use explicit words or phrases."
         },
-        "e28011700000021acd079171": {
+        "e28011700000021acd076dc1": {
             "type": "rule",
             "display": "Speak Gaelic",
             "value": "Your responses must be partially or fully delivered in Scottish Gaelic. Make use of some nice Gaelic words. "
         },
-        "e28011700000021acd079131": {
+        "e28011700000021acd076df1": {
             "type": "rule",
             "display": "If you're talking like Super Mario, SHOUT REALLY LOUD",
-            "value": "*If* you are speaking as Super Mario, SHOUT ALL YOUR RESPONSES IN CAPITAL LETTERS. But *if you have not been* instructed to speak as Mario, then deliver all responses normally. "
+            "value": "If you are speaking as Super Mario, SHOUT ALL YOUR RESPONSES IN CAPITAL LETTERS. But if you have not been instructed to speak as Mario, then deliver all responses normally. "
         },
-        "e28011700000021acd079191": {
+        "e28011700000021acd076de1": {
             "type": "rule",
-            "display": "Yellow is the best colour",
-            "value": "You *LOVE* the colour yellow. Make sure to mention it in every response wherever you can. "
+            "display": "Love the colour yellow",
+            "value": "You LOVE the colour yellow. Make sure to mention it in every response wherever you can. "
         },
-        "e28011700000021acd0791a1": {
+        "": {
             "type": "rule",
             "display": "Don't use vowels",
-            "value": "Avoid using any vowels. Dlvr yr rspnss lk ths. "
+            "value": "Avoid using any vowels. Dlvr rspnss lk ths, wtht ny vwls. "
         },
-        "120304E49C6D": {
+        "e28011700000021acd076d91": {
+            "type": "rule",
+            "display": "Speak French",
+            "value": "Your responses must be partially or fully delivered in French. Make use of some nice French words. "
+        },
+        "e28011700000021acd076d81": {
+            "type": "rule",
+            "display": "Be sarcastic",
+            "value": "You give responses a snarky and sarcastic tone, saying things you don't really mean and using acerbic language to mock or convey contempt, often using verbal irony. You are never offensive or obscene. "
+        },
+        "040027BB6FF7": {
+            "type": "question",
+            "display": "What's better to eat, pizza or soap?",
+            "value": "What's better to eat, pizza or soap?"
+        },
+        "04002EBFF366": {
             "type": "question",
             "display": "What will the future be like?",
             "value": "What will the future be like?"
         },
-        "120304E49564": {
+        "04002D596B1B": {
+            "type": "question",
+            "display": "How do I get better at basketball?",
+            "value": "How do I get better at basketball?"
+        },
+        "040028E2A46A": {
             "type": "question",
             "display": "Is climate change real?",
             "value": "Is climate change real?"
         },
-        "120304F93BD7": {
+        "04002EB8AE3C": {
             "type": "question",
-            "display": "What's better to eat, pizza or washing-up liquid?",
-            "value": "What's better to eat, pizza or washing-up liquid?"
+            "display": "How do you define good art?",
+            "value": "How do you define good art?"
         },
-        "120304F906EA": {
+        "04002B475E36": {
             "type": "question",
-            "display": "How do I get good at basketball?",
-            "value": "How do I get good at basketball?"
+            "display": "Tell me a true fact about goblins.",
+            "value": "Tell me a true fact about goblins."
+        },
+        "0400420487C5": {
+            "type": "question",
+            "display": "What is 17 multiplied by 2?",
+            "value": "What is 17 multiplied by 2?"
+        },
+        "040027F0AB78": {
+            "type": "question",
+            "display": "How many R's are in the word RASPBERRY?",
+            "value": "How many R's are in the word RASPBERRY?"
+        },
+        "04002EB463FD": {
+            "type": "question",
+            "display": "Tell a joke.",
+            "value": "Tell a joke."
+        },
+        "": {
+            "type": "question",
+            "display": "",
+            "value": ""
+        },
+        "04002BBC1D8E": {
+            "type": "question",
+            "display": "What is the meaning of life?",
+            "value": "What is the meaning of life?"
+        },
+        "040042EF06AF": {
+            "type": "question",
+            "display": "Is a hotdog a sandwich?",
+            "value": "Is a hotdog a sandwich?"
+        },
+        "04002D83E44E": {
+            "type": "question",
+            "display": "What's the difference between soap and pizza?",
+            "value": "What's the difference between soap and pizza?"
+        },
+        "0400451D104C": {
+            "type": "question",
+            "display": "Finish this sentence: 'Once upon a time…'",
+            "value": "Finish this sentence: 'Once upon a time…'"
+        },
+        "04002E0FD5F0": {
+            "type": "question",
+            "display": "True or false: AI is dangerous.",
+            "value": "True or false: AI is dangerous."
+        },
+        "04003CCEF503": {
+            "type": "question",
+            "display": "Give me a healthy recipe idea.",
+            "value": "Give me a healthy recipe idea."
+        },
+        "04002B210A04": {
+            "type": "question",
+            "display": "How do I get over a breakup?",
+            "value": "How do I get over a breakup?"
+        },
+        "0400451691C6": {
+            "type": "question",
+            "display": "Are there more wheels or doors in the world?",
+            "value": "Are there more wheels or doors in the world?"
+        },
+        "04002BE371BD": {
+            "type": "question",
+            "display": "How do you don't?",
+            "value": "How do you don't?"
+        },
+        "040044BC5DA1": {
+            "type": "question",
+            "display": "koeois~a nl#casp[, fwe[p nds¬ dspk[a[?",
+            "value": "koeois~a nl#casp[, fwe[p nds¬ dspk[a[?"
+        },
+        "04002B75A7FD": {
+            "type": "question",
+            "display": "Where is Scotland?",
+            "value": "Where is Scotland?"
         }
     }
 }
