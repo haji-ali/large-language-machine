@@ -18,15 +18,15 @@
         },
         "0E0061CF4EEE": {
             "type": "model",
-            "value": "translategemma:4b",
-            "display": "TranslateGemma",
-            "description": "A new collection of open translation models built on Gemma 3, helping people communicate across 55 languages."
+            "value": "qwen3.5:4b",
+            "display": "Qwen 3.5",
+            "description": " "
         },
         "4C00BD1709EF": {
             "type": "model",
-            "value": "translategemma:4b",
-            "display": "TranslateGemma",
-            "description": "A new collection of open translation models built on Gemma 3, helping people communicate across 55 languages."
+            "value": "qwen3.5:4b",
+            "display": "Qwen 3.5",
+            "description": " "
         },
         "4C00BD224A99": {
             "type": "model",
