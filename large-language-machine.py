@@ -144,95 +144,97 @@ def compose_prompt(tags):
     # so we need to clear the whole ruleset variable
     if tags == "uhf_empty":
         uhf_count = 0
+        new_uhf_count = 0
         rules = []
         if debug_mode:
             console.print("No UHF tags, ruleset cleared.")
         return False
     
-    # ok this gets confusing but first, check if any of the received tags are Rules
-    # # and if so, we want to clear the ruleset and construct it from scratch
-    # we also want to start counting how many tags are present in this read
-    for tag in tags:     
-        # check it's a valid tag
-        tag_data = database["tags"].get(tag)
-        if not tag_data or not isinstance(tag_data, dict):
-            # if debug_mode:
-            console.print(f"*Warning*: unregistered tag: {tag}")
-            continue
+    else:
+        # ok this gets confusing but first, check if any of the received tags are Rules
+        # # and if so, we want to clear the ruleset and construct it from scratch
+        # we also want to start counting how many tags are present in this read
+        for tag in tags:     
+            # check it's a valid tag
+            tag_data = database["tags"].get(tag)
+            if not tag_data or not isinstance(tag_data, dict):
+                # if debug_mode:
+                console.print(f"*Warning*: unregistered tag: {tag}")
+                continue
 
-        tag_type = tag_data["type"]
+            tag_type = tag_data["type"]
 
-        if tag_type == "rule":
-            if debug_mode:
-                console.print("UHF tags received.")
-            uhf_sensor = True
-            rules = []
-            new_uhf_count = 0
-
-    # and now start again, iterating through each tag and mapping it to the correct property
-    for tag in tags:
-
-        # check it's a valid tag (have to do this again in case we're looking at RFIDs this time)
-        tag_data = database["tags"].get(tag)
-        if not tag_data or not isinstance(tag_data, dict):
-            if debug_mode:
-                console.print(f"*Error*: '{tag}' not found in database.")
-            continue
-
-        tag_type = tag_data["type"]
-        tag_value = tag_data["value"]
-        tag_display = tag_data["display"]
-
-        if tag_type == "model":
-            model = tag_value
-            rfid_1_sensor = True
-            
-            # See if the model has changed since the last tag read or not
-            # But only if there *is* a previous model, we get an error if there's no previous data
-            if previous_model == "":
+            if tag_type == "rule":
                 if debug_mode:
-                    console.print(f"(pre-loading {model})")
-                ollama_load_model(model)
-                previous_model = model
-            else:
+                    console.print("UHF tags received.")
+                uhf_sensor = True
+                rules = []
+                new_uhf_count = 0
+
+        # and now start again, iterating through each tag and mapping it to the correct property
+        for tag in tags:
+
+            # check it's a valid tag (have to do this again in case we're looking at RFIDs this time)
+            tag_data = database["tags"].get(tag)
+            if not tag_data or not isinstance(tag_data, dict):
                 if debug_mode:
-                    console.print("`previous_model` contains data.")
-                if model != previous_model:
+                    console.print(f"*Error*: '{tag}' not found in database.")
+                continue
+
+            tag_type = tag_data["type"]
+            tag_value = tag_data["value"]
+            tag_display = tag_data["display"]
+
+            if tag_type == "model":
+                model = tag_value
+                rfid_1_sensor = True
+                
+                # See if the model has changed since the last tag read or not
+                # But only if there *is* a previous model, we get an error if there's no previous data
+                if previous_model == "":
                     if debug_mode:
-                        console.print("`model` is not the same as `previous_model`.")
-                    # Send a dummy request to pre-load this model
+                        console.print(f"(pre-loading {model})")
                     ollama_load_model(model)
                     previous_model = model
-                    # play a sound
-                    playsound("Audio/Temp/Model/model_load.wav", block=False)
-                    # do a loading animation because why not. This animation could signify loading data?
-                    animate("Data/Animations/Loading_01.json")
-                    # And reload the last response after the animation
-                    print_response(last_response)
-                    
-                    if debug_mode:
-                        console.print(f"Model: {tag_display}")
                 else:
                     if debug_mode:
-                        console.print("`model` IS the same as `previous_model`")
+                        console.print("`previous_model` contains data.")
+                    if model != previous_model:
+                        if debug_mode:
+                            console.print("`model` is not the same as `previous_model`.")
+                        # Send a dummy request to pre-load this model
+                        ollama_load_model(model)
+                        previous_model = model
+                        # play a sound
+                        playsound("Audio/Temp/Model/model_load.wav", block=False)
+                        # do a loading animation because why not. This animation could signify loading data?
+                        animate("Data/Animations/Loading_01.json")
+                        # And reload the last response after the animation
+                        print_response(last_response)
+                        
+                        if debug_mode:
+                            console.print(f"Model: {tag_display}")
+                    else:
+                        if debug_mode:
+                            console.print("`model` IS the same as `previous_model`")
 
-        elif tag_type == "rule":
-            if tag_value not in rules:
-                rules.append(tag_value)
-                # log that we've added 1 to the tag count in this read
-                new_uhf_count = new_uhf_count + 1
-            if debug_mode:
-                console.print(f"Added rule: {tag_display}")
+            elif tag_type == "rule":
+                if tag_value not in rules:
+                    rules.append(tag_value)
+                    # log that we've added 1 to the tag count in this read
+                    new_uhf_count = new_uhf_count + 1
+                if debug_mode:
+                    console.print(f"Added rule: {tag_display}")
 
-        elif tag_type == "question":
-            question = tag_value
-            rfid_2_sensor = True
-            playsound("Audio/Temp/Questions/question_load.wav", block=False)
-            if debug_mode:
-                console.print(f"Question is: {tag_display}")
-        else:
-            if debug_mode:
-                console.print(f"Invalid tag: '{tag}' not found in database")
+            elif tag_type == "question":
+                question = tag_value
+                rfid_2_sensor = True
+                playsound("Audio/Temp/Questions/question_load.wav", block=False)
+                if debug_mode:
+                    console.print(f"Question is: {tag_display}")
+            else:
+                if debug_mode:
+                    console.print(f"Invalid tag: '{tag}' not found in database")
     
     # Compare new tag count to old tag count and play sounds if we've added or removed tags
     if new_uhf_count > uhf_count:
