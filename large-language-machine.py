@@ -209,7 +209,7 @@ def compose_prompt(tags):
                         # play a sound
                         playsound("Audio/Temp/Model/model_load.wav", block=False)
                         # do a loading animation because why not. This animation could signify loading data?
-                        animate("Data/Animations/Loading_01.json")
+                        animate("Data/Animations/Data_Loading_01.json")
                         # And reload the last response after the animation
                         print_response(last_response)
                         
