@@ -159,8 +159,8 @@ def compose_prompt(tags):
             # check it's a valid tag
             tag_data = database["tags"].get(tag)
             if not tag_data or not isinstance(tag_data, dict):
-                # if debug_mode:
-                console.print(f"*Warning*: unregistered tag: {tag}")
+                if debug_mode:
+                    console.print(f"*Warning*: unregistered tag: {tag}")
                 continue
 
             tag_type = tag_data["type"]
