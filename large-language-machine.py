@@ -393,10 +393,9 @@ def main_message_handler(client, userdata, msg):
             
             if prompt:
                 responding_sound = playsound("Audio/Temp/Response/responding.wav", block=False)
-                playsound(responding_sound)
                 animate("Data/Animations/Loading_01.json")
                 ollama_request(prompt)
-                responding_sound.stop
+                responding_sound.stop()
                 playsound("Audio/Temp/Response/response.wav", block=False)
             else:
                 if debug_mode:
