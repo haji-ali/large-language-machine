@@ -148,7 +148,8 @@ def compose_prompt(tags):
         rules = []
         if debug_mode:
             console.print("No UHF tags, ruleset cleared.")
-        return False
+        # really not sure why I put a "return False" here but I think it's ruining things so commenting it out
+        # return False
     
     else:
         # ok this gets confusing but first, check if any of the received tags are Rules
