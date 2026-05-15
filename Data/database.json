@@ -7,49 +7,49 @@
         "0E0071A97DAB": {
             "type": "model",
             "value": "olmo-3:7b-instruct",
-            "display": "Olmo 3",
+            "display": "DATASET A",
             "description": "Olmo is a series of Open language models designed to enable the science of language models. These models are pre-trained on the Dolma 3 dataset and post-trained on the Dolci datasets."
         },
         "0E0061D0DD62": {
             "type": "model",
             "value": "olmo-3:7b-instruct",
-            "display": "Olmo 3",
+            "display": "DATASET A",
             "description": "Olmo is a series of Open language models designed to enable the science of language models. These models are pre-trained on the Dolma 3 dataset and post-trained on the Dolci datasets."
         },
         "0E0061CF4EEE": {
             "type": "model",
             "value": "nemotron-3-nano:4b",
-            "display": "Nemotron-3-Nano",
+            "display": "DATASET B",
             "description": "Nemotron-3-Nano is a new Standard for Efficient, Open, and Intelligent Agentic Models, now updated with a 4B parameter count model. "
         },
         "4C00BD1709EF": {
             "type": "model",
             "value": "nemotron-3-nano:4b",
-            "display": "Nemotron-3-Nano",
+            "display": "DATASET B",
             "description": "Nemotron-3-Nano is a new Standard for Efficient, Open, and Intelligent Agentic Models, now updated with a 4B parameter count model. "
         },
         "4C00BD224A99": {
             "type": "model",
             "value": "ministral-3:3b",
-            "display": "Ministral 3",
+            "display": "DATASET C",
             "description": "The Ministral 3 family is designed for edge deployment, capable of running on a wide range of hardware."
         },
         "0E006213C9B6": {
             "type": "model",
             "value": "ministral-3:3b",
-            "display": "Ministral 3",
+            "display": "DATASET C",
             "description": "The Ministral 3 family is designed for edge deployment, capable of running on a wide range of hardware."
         },
         "4C00BD3C5A97": {
             "type": "model",
             "value": "qwen3:8b",
-            "display": "Qwen 3",
+            "display": "DATASET D",
             "description": "Qwen3 is the latest generation of large language models in Qwen series, offering a comprehensive suite of dense and mixture-of-experts (MoE) models. "
         },
         "4C00BDAAA1FA": {
             "type": "model",
             "value": "qwen3:8b",
-            "display": "Qwen 3",
+            "display": "DATASET D",
             "description": "Qwen3 is the latest generation of large language models in Qwen series, offering a comprehensive suite of dense and mixture-of-experts (MoE) models. "
         },
         "e28011700000021acd079131": {
