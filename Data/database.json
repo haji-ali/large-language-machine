@@ -18,15 +18,15 @@
         },
         "0E0061CF4EEE": {
             "type": "model",
-            "value": "qwen3.5:4b",
-            "display": "Qwen 3.5",
-            "description": " "
+            "value": "lfm2.5-thinking:1.2b",
+            "display": "LFM2.5",
+            "description": "LFM2.5 is a new family of hybrid models designed for on-device deployment. "
         },
         "4C00BD1709EF": {
             "type": "model",
-            "value": "qwen3.5:4b",
-            "display": "Qwen 3.5",
-            "description": " "
+            "value": "lfm2.5-thinking:1.2b",
+            "display": "LFM2.5",
+            "description": "LFM2.5 is a new family of hybrid models designed for on-device deployment. "
         },
         "4C00BD224A99": {
             "type": "model",
