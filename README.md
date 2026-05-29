@@ -21,6 +21,16 @@ _Large Language Machine_ has been developed through an artist residency at Herio
 
 
 ## User experience
+Approaching the machine, viewers are invited to interact with some easy-to-understand information and a provocation to start exploring: chatbots are made up of lots of data from different sources, secret instructions we don't know about, and hidden controls. What happens to a chatbot's answers when you change how it works inside?
+
+On the main panel, there is a display, a big glowing Activate button, and four different interactions:
+- **Input**, a slot which accepts printed cards containing questions.
+- **Dataset**, a large circular slot, into which the user can insert a cylinder which changes the AI model being used.
+- **Randomness**, a knob which alters the 'temperature' or 'creativity' of the response.
+- **Secret Rules**, a recessed box with a hinged cover which accepts plastic balls printed with special rules the chatbot has to obey. The user can place as many balls in here as they like, or none at all.
+
+The installation is open-ended and can be explored in a non-linear fashion. **The best experience for viewers is when they gradually explore each of its interactions as they feel comfortable** – this makes the impact of each of the controls really clear. It's robust and very tolerant, and it'll react each time the Activate button is pushed, even if the user hasn't changed any of the controls or has left slots empty.
+
 <video data-v-74a71570="" playsinline="true" controls src="https://nc.grpahicdeisgn.com/public.php/dav/files/fZC7Hwd3afjjBFz/" preload="metadata" style="width: 100%; pointer-events: auto;"> Your browser does not support videos. </video>
 > - `0:02` I insert a card asking **What will the future look like?** and hit Activate.
 > - The machine responds: _The future will bring new inventions, kindness, learning and fun adventures for everyone._
