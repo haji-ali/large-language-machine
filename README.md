@@ -1,8 +1,9 @@
 # Large Language Machine
 
-▫️ When we use AI chatbots like ChatGPT, we're not simply interacting with an AI. Chatbots are made up of lots of data from different sources, secret instructions we don’t know about, and hidden controls.
+>_When we use AI chatbots like ChatGPT, we're not simply interacting with an AI. Chatbots are made up of lots of data from different sources, secret instructions we don’t know about, and hidden controls._
+>
+>_What happens to a chatbot’s answers when you change how it works inside?_
 
-What happens to a chatbot’s answers when you change how it works inside?
 ## Abstract
 Large Language Machine is an interactive installation which lets you construct and deconstruct the inner workings of an AI chatbot through a physical, tactile interface. Plug in cards, tubes and balls to choose a dataset, adjust hidden parameters, set up secret rules for the system, and insert a question prompt. Through playful experimentation from input to output, you might start to see how each parameter doesn't just change the outcome, but also reveals how the AI chatbots being used every day aren't neutral intelligences and instead are influenced by lots of hidden (and often biased) instructions.
 Large Language Machine has been developed as part of an artist residency at Heriot-Watt University in Edinburgh, supported by Heriot-Watt Engage and premiered as part of their community initiative The AI Season which aims to encourage young people towards AI literacy informed with a critical approach. The entire installation runs completely offline and records no data, powered by a linux PC running offline AI models, while its interactive elements are run by a local network of Raspberry Pis connected to RFID readers.
