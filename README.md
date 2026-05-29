@@ -23,7 +23,8 @@ _Large Language Machine_ has been developed through an artist residency at Herio
 ## User experience
 Approaching the machine, viewers are invited to interact with some easy-to-understand information and a provocation to start exploring: chatbots are made up of lots of data from different sources, secret instructions we don't know about, and hidden controls. What happens to a chatbot's answers when you change how it works inside?
 
-![Top panel with instructions](Images/top_panel.jpg)
+<!-- ![Top panel with instructions](Images/top_panel.jpg) -->
+![Installation being used in-situ at Currie Community Centre, May 2026](Images/in_situ.jpg)
 
 On the main panel, there is a display, a big glowing Activate button, and four different interactions:
 - **Input**, a slot which accepts printed cards containing questions.
