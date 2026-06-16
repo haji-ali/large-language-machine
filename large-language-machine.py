@@ -3,6 +3,7 @@ import paho.mqtt.client as mqtt  # pyright: ignore[reportMissingImports]
 import json
 import ollama # pyright: ignore[reportMissingImports]
 import os
+import concurrent.futures
 from animation import ascii_animate
 from pathlib import Path
 from rich import print
@@ -108,13 +109,28 @@ def ollama_request(prompt_dict):
         "prompt": prompt_dict["question"],
         "options": {"temperature": prompt_dict["temperature"]}
     }
+    
+    def _generate():
+        return ollama.generate(**payload)
 
     try:
-        response = ollama.generate(**payload)
+        # bringing in this concurrent.futures thing to enable a timeout on the ollama request
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(_generate)
+            response = future.result(timeout=20)
+            
         if debug_mode:
             console.print(payload)
         print_response(response)
         last_response = response
+        
+    except concurrent.futures.TimeoutError:
+        if debug_mode:
+            console.print("ollama_request: ERROR. Inference timed out!")
+        
+        timeout_message = {"response": "ERROR! Something went wrong. \n\nTry again, and restart the Large Language Machine if it keeps happening."}
+        print_response(timeout_message)
+    
     except Exception as e:
         print(f"Ollama API request failed. Error: {e}")
     return
