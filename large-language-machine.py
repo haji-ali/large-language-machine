@@ -128,6 +128,7 @@ def ollama_request(prompt_dict):
         if debug_mode:
             console.print("ollama_request: ERROR. Inference timed out!")
         
+        playsound("Audio/Temp/Error/error.wav", block=False)
         timeout_message = {"response": "ERROR! Something went wrong. \n\nTry again, and restart the Large Language Machine if it keeps happening."}
         print_response(timeout_message)
     
