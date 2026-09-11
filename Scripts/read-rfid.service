@@ -1,12 +1,12 @@
 [Unit]
 Description=Runs an RFID reader script which transmits messages over MQTT.
-After=multi-user.target
-Conflicts=getty@tty1.service
+Wants=network-online.target
+After=network-online.target
+Conflicts=serial-getty@ttyS0.service
 
 [Service]
 Type=simple
 ExecStart=/usr/bin/python3 /home/nathan/large-language-machine/rfid-read.py
-StandardInput=tty-force
 Restart=on-failure
 RestartSec=5
 

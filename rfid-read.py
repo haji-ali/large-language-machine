@@ -26,6 +26,8 @@ print(f"Connecting to MQTT broker. Pushing data to '{TOPIC}'...")
 # Open Serial once, rather than inside the loop
 with serial.Serial("/dev/ttyS0", baudrate=9600, timeout=1) as ser:
     i = 1
+    ser.reset_input_buffer()
+    ser.reset_output_buffer()
     while True:
         print(f'Read #{i}')
 
