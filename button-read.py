@@ -1,6 +1,7 @@
 from gpiozero import LED, Button
 import paho.mqtt.client as mqtt
 import json
+import time
 from signal import pause
 
 # MQTT variables
@@ -13,9 +14,21 @@ TOPIC = "home/sensors/trigger"
 button_led = LED(23)
 push_button = Button(24, bounce_time=0.1)
 
+def on_connect(client, userdata, flags, reason_code, properties):
+    if reason_code == 0:
+        print("Broker session established.")
+    else:
+        print(f"Broker connection FAILED (rc={reason_code})")
+
+def on_disconnect(client, userdata, flags, reason_code, properties):
+    print(f"DISCONNECTED (rc={reason_code}) — loop thread will auto-reconnect")
+
 # Set up MQTT ONCE at startup
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-client.connect(ADDRESS, PORT, KEEPALIVE)
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportPrivateImportUsage]
+client.on_connect = on_connect
+client.on_disconnect = on_disconnect
+client.reconnect_delay_set(min_delay=1, max_delay=30)
+client.connect_async(ADDRESS, PORT, KEEPALIVE)
 client.loop_start() # Start the background thread
 print(f"Connected to external broker. Pushing data to '{TOPIC}'...")
 
@@ -24,8 +37,16 @@ def button_press():
     print("button pressed!")
     
     payload = ["TRIGGER"]
-    client.publish(TOPIC, json.dumps(payload))
-    print(f"Sent: {payload}")
+
+    for attempt in range(3):
+        result = client.publish(TOPIC, json.dumps(payload))
+        if result.rc == mqtt.MQTT_ERR_SUCCESS:
+            print(f"Sent: {payload}")
+            break
+        print(f"Publish failed (rc={result.rc}), retrying.")
+        time.sleep(1)
+    else:
+        print("WARNING: failed to send TRIGGER after retries")
 
 def button_release():
     button_led.on()
