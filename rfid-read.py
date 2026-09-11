@@ -8,43 +8,50 @@ ADDRESS = "192.168.1.10"
 TOPIC = "home/sensors/rfid"
 PORT = 2883
 
-# MQTT set up
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+def on_connect(client, userdata, flags, reason_code, properties):
+    print(f"Broker connected (rc={reason_code})")
 
-try:
-    client.connect(ADDRESS, PORT, 60)
-    # This starts a background thread to handle reconnects and data buffers
-    client.loop_start() 
-    print(f"Connected to MQTT broker. Pushing data to '{TOPIC}'...")
+def on_disconnect(client, userdata, flags, reason_code, properties):
+    print(f"DISCONNECTED (rc={reason_code}) — auto-reconnecting")
 
-    # Open Serial once, rather than inside the loop
-    with serial.Serial("/dev/ttyS0", baudrate=9600, timeout=1) as ser:
-        i = 1
-        while True:
-            print(f'Read #{i}')
-            
-            # Read 12 characters
-            data = ser.read(12)
-            
-            if data and data != b"000000000000":
-                decoded_data = data.decode("utf-8").strip()
-                print(f"Read {i}: {decoded_data}")
-                
-                payload = [decoded_data]
-                # The background loop ensures this actually reaches the broker
-                client.publish(TOPIC, json.dumps(payload))
-                
-                # Flush to keep the buffer clean for the next physical tag swipe
-                ser.reset_input_buffer()
+# MQTT set up — async so the service can start before the broker is up
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportPrivateImportUsage]
+client.on_connect = on_connect
+client.on_disconnect = on_disconnect
+client.reconnect_delay_set(min_delay=1, max_delay=30)
+client.connect_async(ADDRESS, PORT, 60)
+client.loop_start()
+print(f"Connecting to MQTT broker. Pushing data to '{TOPIC}'...")
+
+# Open Serial once, rather than inside the loop
+with serial.Serial("/dev/ttyS0", baudrate=9600, timeout=1) as ser:
+    i = 1
+    while True:
+        print(f'Read #{i}')
+
+        # Read 12 characters
+        data = ser.read(12)
+
+        if data and data != b"000000000000":
+            decoded_data = data.decode("utf-8").strip()
+            print(f"Read {i}: {decoded_data}")
+
+            payload = [decoded_data]
+
+            for attempt in range(3):
+                result = client.publish(TOPIC, json.dumps(payload), qos=1)
+                if result.rc == mqtt.MQTT_ERR_SUCCESS:
+                    print(f"Sent: {payload}")
+                    break
+                print(f"Publish failed (rc={result.rc}), retrying...")
+                time.sleep(1)
             else:
-                # Small delay to prevent CPU pinning if no data is present
-                time.sleep(0.1)
-            
-            i += 1
+                print("Failed to send RFID read after retries")
 
-except KeyboardInterrupt:
-    print("\nDisconnecting...")
-finally:
-    client.loop_stop()
-    client.disconnect()
-    print("Cleanup complete.")
+            # Flush to keep the buffer clean for the next physical tag swipe
+            ser.reset_input_buffer()
+        else:
+            # Small delay to prevent CPU pinning if no data is present
+            time.sleep(0.1)
+
+        i += 1
