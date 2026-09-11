@@ -11,7 +11,7 @@ PORT = 2883
 KEEPALIVE = 60
 TOPIC = "home/sensors/temperature"
 
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportPrivateImportUsage]
 client.connect(ADDRESS, PORT, KEEPALIVE)
 client.loop_start()
 
@@ -19,7 +19,7 @@ last_value = None
 
 try:
     while True:
-        val = pot.value
+        val = pot.value * -1
         rounded_val = round(val,1)
         if rounded_val != last_value:
             last_value = rounded_val
