@@ -24,16 +24,29 @@ ADDRESS = "192.168.1.10"
 TOPIC = "home/sensors/uhf"
 PORT = 2883
 
+is_ready = False
+
 def on_connect(client, userdata, flags, reason_code, properties):
-    print(f"Broker connected (rc={reason_code})")
+    if reason_code == 0:
+        print("Broker session established.")
+        client.subscribe("/home/system/status")
+    else:
+        print(f"Broker connection FAILED (rc={reason_code})")
+
+# Handle the Ready message
+def on_message(client, userdata, msg):
+    global is_ready
+    if msg.topic == "/home/system/status" and msg.payload.decode("utf-8") == "ready":
+        is_ready = True
 
 def on_disconnect(client, userdata, flags, reason_code, properties):
-    print(f"DISCONNECTED (rc={reason_code}) — auto-reconnecting")
+    print(f"DISCONNECTED (rc={reason_code}) — loop thread will auto-reconnect")
 
 # MQTT set up
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # type: ignore
 client.on_connect = on_connect
 client.on_disconnect = on_disconnect
+client.on_message = on_message
 client.reconnect_delay_set(min_delay = 1, max_delay= 30)
 client.connect_async(ADDRESS, PORT, 60)
 client.loop_start()
@@ -59,6 +72,11 @@ def read_uhf():
 
     uhf.stop_read()  # type: ignore # Ends the reading session
     return list(found_tags)
+
+print("Waiting for main server to be ready...")
+while not is_ready:
+    time.sleep(0.5)
+print("Server is ready! Initializing sensors.")
 
 try:
     while True:
