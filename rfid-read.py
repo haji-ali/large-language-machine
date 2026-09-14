@@ -13,14 +13,14 @@ is_ready = False
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
         print("Broker session established.")
-        client.subscribe("/home/system/status")
+        client.subscribe("home/system/status")
     else:
         print(f"Broker connection FAILED (rc={reason_code})")
 
 # Handle the Ready message
 def on_message(client, userdata, msg):
     global is_ready
-    if msg.topic == "/home/system/status" and msg.payload.decode("utf-8") == "ready":
+    if msg.topic == "home/system/status" and msg.payload.decode("utf-8") == "ready":
         is_ready = True
 
 def on_disconnect(client, userdata, flags, reason_code, properties):
