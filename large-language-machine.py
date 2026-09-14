@@ -504,6 +504,9 @@ def on_server_connect(client, userdata, flags, reason_code, properties):
 
 client.on_connect = on_server_connect
 
+# "Last will and testament" message if the script crashes:
+client.will_set("home/system/status", payload="offline", qos=1, retain=True)
+
 console.print(f"Connecting to Broker at {BROKER_ADDRESS}...")
 client.connect(BROKER_ADDRESS, PORT, 60)
 client.subscribe([(TOPIC_RFID, 0), (TOPIC_UHF, 0), (TOPIC_TRIGGER, 0), (TOPIC_TEMPERATURE, 0)])
@@ -517,4 +520,9 @@ def on_message(client, userdata, msg):
         main_message_handler(client, userdata, msg)
 
 client.on_message = on_message
-client.loop_forever()
+try:
+    client.loop_forever()
+except KeyboardInterrupt:
+    console.print("\nShutting down. Broadcasting offline state.")
+    client.publish("home/system/status", "offline", qos=1, retain=True)
+    client.disconnect()
