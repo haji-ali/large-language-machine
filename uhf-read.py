@@ -36,8 +36,16 @@ def on_connect(client, userdata, flags, reason_code, properties):
 # Handle the Ready message
 def on_message(client, userdata, msg):
     global is_ready
-    if msg.topic == "home/system/status" and msg.payload.decode("utf-8") == "ready":
-        is_ready = True
+    if msg.topic == "home/system/status":
+            payload = msg.payload.decode("utf-8") == "ready"
+            if payload == "ready":
+                if not is_ready:
+                      print("Server is ready, resuming.")
+                is_ready = True
+            elif payload == "offline":
+                if is_ready:
+                    print("Server has gone offline, pausing.")
+                is_ready = False
 
 def on_disconnect(client, userdata, flags, reason_code, properties):
     global is_ready
@@ -82,6 +90,12 @@ print("Server is ready! Initializing sensors.")
 
 try:
     while True:
+        
+        # Check the server is ready, hang here if not
+        if not is_ready:
+            time.sleep(0.5)
+            continue
+
         tags = read_uhf()
         number_of_tags = len(tags)
         

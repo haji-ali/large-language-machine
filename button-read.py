@@ -26,12 +26,20 @@ def on_connect(client, userdata, flags, reason_code, properties):
 # Handle the Ready message
 def on_message(client, userdata, msg):
     global is_ready
-    if msg.topic == "home/system/status" and msg.payload.decode("utf-8") == "ready":
-        is_ready = True
+    if msg.topic == "home/system/status":
+            payload = msg.payload.decode("utf-8") == "ready"
+            if payload == "ready":
+                if not is_ready:
+                      print("Server is ready, resuming.")
+                is_ready = True
+            elif payload == "offline":
+                if is_ready:
+                    print("Server has gone offline, pausing.")
+                is_ready = False
 
 def on_disconnect(client, userdata, flags, reason_code, properties):
     global is_ready
-    print(f"DISCONNECTED (rc={reason_code}) — loop thread will auto-reconnect")
+    print(f"DISCONNECTED (rc={reason_code}) — no button triggers now.")
     is_ready = False
 
 # Set up MQTT ONCE at startup
@@ -41,6 +49,7 @@ client.on_disconnect = on_disconnect
 client.on_message = on_message
 client.reconnect_delay_set(min_delay=1, max_delay=30)
 client.connect_async(ADDRESS, PORT, KEEPALIVE)
+
 client.loop_start() # Start the background thread
 print(f"Connected to external broker. Pushing data to '{TOPIC}'...")
 
@@ -50,6 +59,11 @@ while not is_ready:
 print("Server is ready! Initializing sensors.")
 
 def button_press():
+
+    if not is_ready:
+        print("Button press ignored, server isn't ready.")
+        return
+
     button_led.off()
     print("button pressed!")
     
