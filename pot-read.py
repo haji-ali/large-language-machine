@@ -11,6 +11,8 @@ PORT = 2883
 KEEPALIVE = 60
 TOPIC = "home/sensors/temperature"
 
+is_ready = False
+
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportPrivateImportUsage]
 client.connect(ADDRESS, PORT, KEEPALIVE)
 client.loop_start()
