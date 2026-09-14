@@ -26,39 +26,49 @@ print(f"Connecting to MQTT broker. Pushing data to '{TOPIC}'...")
 # Open Serial once, rather than inside the loop
 with serial.Serial("/dev/ttyS0", baudrate=9600, timeout=1) as ser:
     i = 1
+    # Give the serial port a brief moment to settle on cold boot, then flush
+    time.sleep(1)
     ser.reset_input_buffer()
     ser.reset_output_buffer()
+
     while True:
-        # Flush to keep the buffer clean for the next physical tag swipe
-        ser.reset_input_buffer()
-        print("Flushing buffer")
-        
-        print(f'Read #{i}')
+        waiting = ser.in_waiting
 
-        # Read 12 characters
-        data = ser.read(12)
+        if waiting >= 12:
+            # We have at least a full 12-character tag in the buffer
+            data = ser.read(12)
 
-        if data and data != b"000000000000":
-            decoded_data = data.decode("utf-8").strip()
-            print(f"Read {i}: {decoded_data}")
+            if data and data != b"000000000000":
+                decoded_data = data.decode("utf-8", errors="ignore").strip()
+                print(f"Read {i}: {decoded_data}")
 
-            payload = [decoded_data]
+                payload = [decoded_data]
 
-            for attempt in range(3):
-                result = client.publish(TOPIC, json.dumps(payload), qos=1)
-                result.wait_for_publish(timeout=2.0) # Wait up to 2 seconds for the broker ACK
-                
-                if result.is_published():
-                    print(f"Sent: {payload}")
-                    break
+                for attempt in range(3):
+                    result = client.publish(TOPIC, json.dumps(payload), qos=1)
+                    result.wait_for_publish(timeout=2.0)  # Wait up to 2 seconds for broker ACK
                     
-                print("Publish failed or timed out, retrying...")
-                time.sleep(1)
-            else:
-                print("Failed to send RFID read after retries")
+                    if result.is_published():
+                        print(f"Sent: {payload}")
+                        break
+                        
+                    print("Publish failed or timed out, retrying...")
+                    time.sleep(1)
+                else:
+                    print("Failed to send RFID read after retries")
+
+            # Clear out any trailing bytes to prevent framing desync on the next swipe
+            ser.reset_input_buffer()
+            i += 1
+
+        elif waiting > 0:
+            # Bytes exist, but fewer than 12.
+            # Allow a short delay to see if the rest of the 12-byte payload is mid-transmission
+            time.sleep(0.1)
+            if ser.in_waiting < 12:
+                # Still incomplete. This is boot noise/partial byte drift; discard it.
+                ser.reset_input_buffer()
 
         else:
-            # Small delay to prevent CPU pinning if no data is present
+            # No data waiting; idle briefly to prevent pinning CPU core
             time.sleep(0.1)
-
-        i += 1
