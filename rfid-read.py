@@ -29,6 +29,10 @@ with serial.Serial("/dev/ttyS0", baudrate=9600, timeout=1) as ser:
     ser.reset_input_buffer()
     ser.reset_output_buffer()
     while True:
+        # Flush to keep the buffer clean for the next physical tag swipe
+        ser.reset_input_buffer()
+        print("Flushing buffer")
+        
         print(f'Read #{i}')
 
         # Read 12 characters
@@ -53,8 +57,6 @@ with serial.Serial("/dev/ttyS0", baudrate=9600, timeout=1) as ser:
             else:
                 print("Failed to send RFID read after retries")
 
-            # Flush to keep the buffer clean for the next physical tag swipe
-            ser.reset_input_buffer()
         else:
             # Small delay to prevent CPU pinning if no data is present
             time.sleep(0.1)
