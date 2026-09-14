@@ -1,13 +1,13 @@
 # Python script to run on both RFID readers, broadcasting RFID tags over MQTT
 
 import serial
-import paho.mqtt.client as mqtt # pyright: ignore[reportMissingImports]
+import paho.mqtt.client as mqtt 
 import time
 import json
 
 # Set up UHF reader
-import uhf
-import RPi.GPIO as GPIO  # pyright: ignore[reportMissingModuleSource]
+import uhf # type: ignore
+import RPi.GPIO as GPIO   # type: ignore
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
@@ -31,7 +31,7 @@ def on_disconnect(client, userdata, flags, reason_code, properties):
     print(f"DISCONNECTED (rc={reason_code}) — auto-reconnecting")
 
 # MQTT set up
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # type: ignore
 client.on_connect = on_connect
 client.on_disconnect = on_disconnect
 client.reconnect_delay_set(min_delay = 1, max_delay= 30)
@@ -43,21 +43,21 @@ print(f"Connected to MQTT broker. Pushing data to '{TOPIC}'...")
 
 def read_uhf():
     found_tags = set() # a set ignores duplicates so I don't need to script that
-    uhf.serial.reset_input_buffer() # clear out previous reads / junk etc
+    uhf.serial.reset_input_buffer() # type: ignore # clear out previous reads / junk etc
     
-    uhf.multiple_read()  # Starts reading
+    uhf.multiple_read()  # type: ignore # Starts reading
     start_time = time.time() # gets the current time
     while time.time() - start_time < 1.0:
-        read = uhf.read_mul()
+        read = uhf.read_mul() # type: ignore
         if read is not None:
             tag_id = ''.join(read[8:20])
             found_tags.add(tag_id)
         else:
             # trying to find the next '0xBB' start byte in case reading got interrupted
-            if uhf.serial.in_waiting > 0:
-                uhf.serial.read(1)
+            if uhf.serial.in_waiting > 0: # type: ignore
+                uhf.serial.read(1) # type: ignore
 
-    uhf.stop_read()  # Ends the reading session
+    uhf.stop_read()  # type: ignore # Ends the reading session
     return list(found_tags)
 
 try:
