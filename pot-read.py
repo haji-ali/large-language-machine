@@ -13,15 +13,36 @@ TOPIC = "home/sensors/temperature"
 
 is_ready = False
 
+def on_connect(client, userdata, flags, reason_code, properties):
+    if reason_code == 0:
+        print("Connected to the broker.")
+        client.subscribe("home/system/status")
+    else:
+        print(f"Broker connection FAILED! (rc={reason_code})")
+
+def on_message(client, userdata, msg):
+    global is_ready
+    if msg.topic == "home/system/status" and msg.payload.decode("utf-8") == "ready":
+        is_ready = True
+
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportPrivateImportUsage]
+
+client.on_connect = on_connect
+client.on_message = on_message
+
 client.connect(ADDRESS, PORT, KEEPALIVE)
 client.loop_start()
 
 last_value = None
 
+print("Waiting for server to spin up...")
+while not is_ready:
+    sleep(0.5)
+print("Server is ready, starting reads.")
+
 try:
     while True:
-        # Fix because I wired the pot the wrong way – need to invert the number
+        # Fix because I wired the pot the wrong way, now have to invert the number. Sorry x
         val = 1 - pot.value
         rounded_val = round(val,1)
         if rounded_val != last_value:
