@@ -319,6 +319,7 @@ def show_start_screen():
     global start_screen_animation
 
     console.clear()
+    reset_idle_timer()
     # Select a start screen animation, and then queue up a different one for next time
     if start_screen_animation == 0:
         animate("Data/Animations/Start_Screen_00.json")
