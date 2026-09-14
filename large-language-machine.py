@@ -58,6 +58,7 @@ secret_rules = database["setup"]["secret_rules"]
 
 # MQTT setup
 BROKER_ADDRESS = "localhost"
+PORT = 2883
 TOPIC_RFID = "home/sensors/rfid"
 TOPIC_UHF = "home/sensors/uhf"
 TOPIC_TRIGGER = "home/sensors/trigger"
@@ -495,9 +496,16 @@ def main_message_handler(client, userdata, msg):
 # Set up MQTT client
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportPrivateImportUsage]
 
+# Sending out a 'ready' message
+def on_server_connect(client, userdata, flags, reason_code, properties):
+    if reason_code ==0:
+        console.print("Connected to broker, sending out Ready state retained message.")
+        client.publish("/home/system/status", "ready", qos=1, retain=True)
+
+client.on_connect = on_server_connect
 
 console.print(f"Connecting to Broker at {BROKER_ADDRESS}...")
-client.connect(BROKER_ADDRESS, 2883, 60)
+client.connect(BROKER_ADDRESS, PORT, 60)
 client.subscribe([(TOPIC_RFID, 0), (TOPIC_UHF, 0), (TOPIC_TRIGGER, 0), (TOPIC_TEMPERATURE, 0)])
 
 console.print(f"Listening for updates on '{TOPIC_RFID}', '{TOPIC_UHF}', {TOPIC_TRIGGER} and '{TOPIC_TEMPERATURE}'...")
