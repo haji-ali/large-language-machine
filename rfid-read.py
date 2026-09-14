@@ -24,7 +24,9 @@ def on_message(client, userdata, msg):
         is_ready = True
 
 def on_disconnect(client, userdata, flags, reason_code, properties):
+    global is_ready
     print(f"DISCONNECTED (rc={reason_code}) — loop thread will auto-reconnect")
+    is_ready = False
 
 # MQTT set up — async so the service can start before the broker is up
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportPrivateImportUsage]
