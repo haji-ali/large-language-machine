@@ -16,6 +16,15 @@ push_button = Button(24, bounce_time=0.1)
 
 is_ready = False
 
+def button_flash():
+    button_led.on()
+    time.sleep(0.1)
+    button_led.off()
+    time.sleep(0.1)
+    button_led.on()
+    time.sleep(0.1)
+    button_led.off()
+
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
         print("Broker session established.")
@@ -55,6 +64,7 @@ print(f"Connected to external broker. Pushing data to '{TOPIC}'...")
 
 print("Waiting for main server to be ready...")
 while not is_ready:
+    button_flash()
     time.sleep(0.5)
 print("Server is ready! Initializing sensors.")
 
