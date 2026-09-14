@@ -1,13 +1,13 @@
 # Python script to run on both RFID readers, broadcasting RFID tags over MQTT
 
-import serial # type: ignore #import serial module
-import paho.mqtt.client as mqtt # pyright: ignore[reportMissingImports]
+import serial
+import paho.mqtt.client as mqtt 
 import time
 import json
 
 # Set up UHF reader
-import uhf
-import RPi.GPIO as GPIO  # pyright: ignore[reportMissingModuleSource]
+import uhf # type: ignore
+import RPi.GPIO as GPIO   # type: ignore
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
@@ -22,45 +22,76 @@ uhf.setRegion_EU()
 # MQTT variables
 ADDRESS = "192.168.1.10"
 TOPIC = "home/sensors/uhf"
+PORT = 2883
+
+def on_connect(client, userdata, flags, reason_code, properties):
+    print(f"Broker connected (rc={reason_code})")
+
+def on_disconnect(client, userdata, flags, reason_code, properties):
+    print(f"DISCONNECTED (rc={reason_code}) — auto-reconnecting")
 
 # MQTT set up
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-client.connect(ADDRESS, 2883, 60)
-# client.loop_start()
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # type: ignore
+client.on_connect = on_connect
+client.on_disconnect = on_disconnect
+client.reconnect_delay_set(min_delay = 1, max_delay= 30)
+client.connect_async(ADDRESS, PORT, 60)
+client.loop_start()
 print(f"Connected to MQTT broker. Pushing data to '{TOPIC}'...")
 
 # Main functions
 
 def read_uhf():
     found_tags = set() # a set ignores duplicates so I don't need to script that
-    uhf.serial.reset_input_buffer() # clear out previous reads / junk etc
+    uhf.serial.reset_input_buffer() # type: ignore # clear out previous reads / junk etc
     
-    uhf.multiple_read()  # Starts reading
+    uhf.multiple_read()  # type: ignore # Starts reading
     start_time = time.time() # gets the current time
     while time.time() - start_time < 1.0:
-        read = uhf.read_mul()
+        read = uhf.read_mul() # type: ignore
         if read is not None:
             tag_id = ''.join(read[8:20])
             found_tags.add(tag_id)
         else:
             # trying to find the next '0xBB' start byte in case reading got interrupted
-            if uhf.serial.in_waiting > 0:
-                uhf.serial.read(1)
+            if uhf.serial.in_waiting > 0: # type: ignore
+                uhf.serial.read(1) # type: ignore
 
-    uhf.stop_read()  # Ends the reading session
+    uhf.stop_read()  # type: ignore # Ends the reading session
     return list(found_tags)
 
-while True:
-    tags = read_uhf()
-    number_of_tags = len(tags)
-    
-    if tags:
-        print(f"{number_of_tags} tags scanned.")
-        # print(f"Tags: {tags}")
-        payload = tags
-        client.publish(TOPIC, json.dumps(payload))
-    else:
-        print("No tags read.")
-        payload = "uhf_empty"
-        client.publish(TOPIC, json.dumps(payload))
-    time.sleep(0.5)
+try:
+    while True:
+        tags = read_uhf()
+        number_of_tags = len(tags)
+        
+        if tags:
+            print(f"{number_of_tags} tags scanned.")
+            payload = tags
+        else:
+            print("No tags read.")
+            payload = "uhf_empty"
+            
+        for attempt in range(3):
+            result = client.publish(TOPIC, json.dumps(payload), qos=1)
+            
+            # wait_for_publish blocks until QoS 1 PUBACK is received or timeout is met
+            result.wait_for_publish(timeout=1.0)
+            
+            if result.is_published():
+                print(f"Sent: {payload}")
+                break
+                
+            print(f"Publish failed, retrying...")
+            time.sleep(1)
+        else:
+            print("Failed to send UHF read after retries")
+
+        time.sleep(0.5)
+
+except KeyboardInterrupt:
+    print("\nDisconnecting...")
+
+finally:
+    client.loop_stop()
+    client.disconnect()

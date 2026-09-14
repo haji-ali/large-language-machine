@@ -14,6 +14,7 @@ from rich.align import Align
 from rich import box
 from time import sleep
 from playsound3 import playsound
+from threading import Timer
 console=Console()
 
 # handle script being launched in debug mode (ie. `python3 large-language-machine.py debug`)
@@ -61,6 +62,13 @@ TOPIC_RFID = "home/sensors/rfid"
 TOPIC_UHF = "home/sensors/uhf"
 TOPIC_TRIGGER = "home/sensors/trigger"
 TOPIC_TEMPERATURE = "home/sensors/temperature"
+
+# Timeout setup for going back to start screen
+idle_timer = None
+TIMEOUT_SECONDS = 60.0
+
+# Set initial start screen animation
+start_screen_animation = 0
 
 
 def animate(path: str):
@@ -307,6 +315,34 @@ def compose_prompt(tags):
                 print('Incomplete prompt: no temperature')
         return False
 
+def show_start_screen():
+    global start_screen_animation
+
+    console.clear()
+    reset_idle_timer()
+    # Select a start screen animation, and then queue up a different one for next time
+    if start_screen_animation == 0:
+        animate("Data/Animations/Start_Screen_00.json")
+        start_screen_animation = 1
+    else:
+        animate("Data/Animations/Start_Screen_01.json")
+        start_screen_animation = 0
+
+    # I reckon want to put something better in here, can adjust in situ
+    ready_panel = Panel("Insert a question card and press GO", width=44, padding=(3,2))
+    ready_centred = Align(ready_panel, align="center", vertical="middle")
+
+    console.print(ready_centred, height=19)
+
+def reset_idle_timer():
+    global idle_timer
+
+    if idle_timer is not None:
+        idle_timer.cancel()
+
+    idle_timer = Timer(TIMEOUT_SECONDS, show_start_screen)
+    idle_timer.start()
+
 def startup_checks(client, userdata, msg):
     global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode
     
@@ -411,6 +447,9 @@ def main_message_handler(client, userdata, msg):
             if prompt:
                 responding_sound = playsound("Audio/Temp/Response/responding.wav", block=False)
                 animate("Data/Animations/Loading_01.json")
+
+                # Starting the reset timer! Putting it here so it can catch
+                reset_idle_timer()
                 ollama_request(prompt)
                 responding_sound.stop()
                 playsound("Audio/Temp/Response/response.wav", block=False)
@@ -454,7 +493,7 @@ def main_message_handler(client, userdata, msg):
 
 
 # Set up MQTT client
-client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportPrivateImportUsage]
 
 
 console.print(f"Connecting to Broker at {BROKER_ADDRESS}...")
