@@ -25,12 +25,16 @@ def on_message(client, userdata, msg):
     if msg.topic == "home/system/status" and msg.payload.decode("utf-8") == "ready":
         is_ready = True
 
+def on_disconnect(client, userdata, flags, reason_code, properties):
+    print(f"DISCONNECTED (rc={reason_code}) — loop thread will auto-reconnect")
+
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportPrivateImportUsage]
 
 client.on_connect = on_connect
 client.on_message = on_message
-
-client.connect(ADDRESS, PORT, KEEPALIVE)
+client.on_disconnect = on_disconnect
+client.reconnect_delay_set(min_delay=1, max_delay=30)
+client.connect_async(ADDRESS, PORT, KEEPALIVE)
 client.loop_start()
 
 last_value = None
