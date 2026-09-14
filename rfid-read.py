@@ -42,10 +42,13 @@ with serial.Serial("/dev/ttyS0", baudrate=9600, timeout=1) as ser:
 
             for attempt in range(3):
                 result = client.publish(TOPIC, json.dumps(payload), qos=1)
-                if result.rc == mqtt.MQTT_ERR_SUCCESS:
+                result.wait_for_publish(timeout=2.0) # Wait up to 2 seconds for the broker ACK
+                
+                if result.is_published():
                     print(f"Sent: {payload}")
                     break
-                print(f"Publish failed (rc={result.rc}), retrying...")
+                    
+                print("Publish failed or timed out, retrying...")
                 time.sleep(1)
             else:
                 print("Failed to send RFID read after retries")
