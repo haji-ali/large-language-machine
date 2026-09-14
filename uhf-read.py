@@ -68,17 +68,21 @@ try:
         if tags:
             print(f"{number_of_tags} tags scanned.")
             payload = tags
-            client.publish(TOPIC, json.dumps(payload))
         else:
             print("No tags read.")
             payload = "uhf_empty"
             
         for attempt in range(3):
             result = client.publish(TOPIC, json.dumps(payload), qos=1)
-            if result.rc == mqtt.MQTT_ERR_SUCCESS:
+            
+            # wait_for_publish blocks until QoS 1 PUBACK is received or timeout is met
+            result.wait_for_publish(timeout=1.0)
+            
+            if result.is_published():
                 print(f"Sent: {payload}")
                 break
-            print(f"Publish failed (rc={result.rc}), retrying...")
+                
+            print(f"Publish failed, retrying...")
             time.sleep(1)
         else:
             print("Failed to send UHF read after retries")
