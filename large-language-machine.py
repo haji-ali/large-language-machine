@@ -446,14 +446,21 @@ def main_message_handler(client, userdata, msg):
         if msg.topic == TOPIC_TRIGGER:
             
             if prompt:
+                # Let the button know we're busy so the light switches off
+                client.publish("home/system/status", "busy", qos=1, retain=True)
+
                 responding_sound = playsound("Audio/Temp/Response/responding.wav", block=False)
                 animate("Data/Animations/Loading_01.json")
 
-                # Starting the reset timer! Putting it here so it can catch
+                # Starting the reset timer! Putting it here so it can catch failed inferences and reset if we're just left hanging
                 reset_idle_timer()
                 ollama_request(prompt)
                 responding_sound.stop()
                 playsound("Audio/Temp/Response/response.wav", block=False)
+
+                # Broadcast ready state again
+                client.publish("home/system/status", "ready", qos=1, retain=True)
+
             else:
                 if debug_mode:
                     console.print("TW No inference triggered because there's no prompt data.")

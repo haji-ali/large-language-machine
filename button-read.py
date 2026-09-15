@@ -18,11 +18,11 @@ is_ready = False
 
 def button_flash():
     button_led.on()
-    time.sleep(0.1)
+    time.sleep(0.2)
     button_led.off()
-    time.sleep(0.1)
+    time.sleep(0.2)
     button_led.on()
-    time.sleep(0.1)
+    time.sleep(0.2)
     button_led.off()
 
 def on_connect(client, userdata, flags, reason_code, properties):
@@ -41,10 +41,17 @@ def on_message(client, userdata, msg):
                 if not is_ready:
                       print("Server is ready, resuming.")
                 is_ready = True
+                button_led.on()
+            elif payload == "busy":
+                is_ready = False
+                button_flash()
+                button_flash()
+                button_led.off()
             elif payload == "offline":
                 if is_ready:
                     print("Server has gone offline, pausing.")
                 is_ready = False
+                button_led.off()
 
 def on_disconnect(client, userdata, flags, reason_code, properties):
     global is_ready
@@ -74,7 +81,7 @@ def button_press():
         print("Button press ignored, server isn't ready.")
         return
 
-    button_led.off()
+    button_led.off() # button LED on/off should be controlled by commands in on_message() now, leaving this here atm but maybe should comment it out
     print("button pressed!")
     
     payload = ["TRIGGER"]
@@ -90,7 +97,8 @@ def button_press():
         print("WARNING: failed to send TRIGGER after retries")
 
 def button_release():
-    button_led.on()
+    if is_ready:
+        button_led.on()
 
 push_button.when_pressed = button_press
 push_button.when_released = button_release
