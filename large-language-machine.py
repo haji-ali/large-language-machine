@@ -4,6 +4,7 @@ import json
 import ollama # pyright: ignore[reportMissingImports]
 import os
 import concurrent.futures
+import socket
 from animation import ascii_animate
 from pathlib import Path
 from rich import print
@@ -73,6 +74,20 @@ TIMEOUT_SECONDS = 60.0
 # Set initial start screen animation
 start_screen_animation = 0
 
+def check_network():
+    try:
+        # Try router
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("192.168.1.1", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        
+        # If the OS gives us our external IP, the Wi-Fi link is active
+        if local_ip == "192.168.1.10":
+            return True
+        return False
+    except Exception:
+        return False
 
 def animate(path: str):
     with open(path, "r", encoding="utf-8") as f:
@@ -357,7 +372,10 @@ def startup_checks(client, userdata, msg):
         console.print("Startup Test Sequence", justify="center")
         console.print(" ")
         console.print(" ")
-        if is_ready:
+
+        network_active = check_network()
+
+        if is_ready and network_active:
             startup_table = Table(title="Network: ✅ ONLINE", show_lines=True, width=53)
         else:
             startup_table = Table(title="Network: ❌ OFFLINE", show_lines=True, width=53)
