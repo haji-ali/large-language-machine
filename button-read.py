@@ -2,6 +2,7 @@ from gpiozero import LED, Button
 import paho.mqtt.client as mqtt
 import json
 import time
+import threading
 from signal import pause
 
 # MQTT variables
@@ -25,6 +26,11 @@ def button_flash():
     time.sleep(0.2)
     button_led.off()
 
+def flash_and_stay_off():
+    button_flash()
+    button_flash()
+    button_led.off()
+
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
         print("Broker session established.")
@@ -42,11 +48,11 @@ def on_message(client, userdata, msg):
                       print("Server is ready, resuming.")
                 is_ready = True
                 button_led.on()
+
             elif payload == "busy":
                 is_ready = False
-                button_flash()
-                button_flash()
-                button_led.off()
+                threading.Thread(target=flash_and_stay_off).start()
+
             elif payload == "offline":
                 if is_ready:
                     print("Server has gone offline, pausing.")
@@ -71,8 +77,10 @@ print(f"Connected to external broker. Pushing data to '{TOPIC}'...")
 
 print("Waiting for main server to be ready...")
 while not is_ready:
-    button_flash()
+    button_led.toggle()
     time.sleep(0.5)
+
+button_led.on()
 print("Server is ready! Initializing sensors.")
 
 def button_press():
@@ -81,7 +89,7 @@ def button_press():
         print("Button press ignored, server isn't ready.")
         return
 
-    button_led.off() # button LED on/off should be controlled by commands in on_message() now, leaving this here atm but maybe should comment it out
+    button_led.off()
     print("button pressed!")
     
     payload = ["TRIGGER"]
@@ -97,10 +105,7 @@ def button_press():
         print("WARNING: failed to send TRIGGER after retries")
 
 def button_release():
-    if is_ready:
-        # is this stickign the button on?
-        # button_led.on()
-        print("")
+    pass
 
 push_button.when_pressed = button_press
 push_button.when_released = button_release
