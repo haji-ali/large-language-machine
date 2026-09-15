@@ -6,6 +6,8 @@ Conflicts=serial-getty@ttyS0.service
 
 [Service]
 Type=simple
+TimeoutStartSec=300
+ExecStartPre=/bin/sleep 150
 ExecStart=/usr/bin/python3 /home/nathan/large-language-machine/rfid-read.py
 Restart=always
 RestartSec=5

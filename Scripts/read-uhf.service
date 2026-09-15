@@ -5,6 +5,8 @@ Conflicts=getty@tty1.service
 
 [Service]
 Type=simple
+TimeoutStartSec=300
+ExecStartPre=/bin/sleep 150
 ExecStart=/usr/bin/python3 /home/nathan/large-language-machine/uhf-read.py
 StandardInput=tty-force
 Restart=always
