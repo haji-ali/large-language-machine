@@ -507,7 +507,7 @@ client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportP
 def on_server_connect(client, userdata, flags, reason_code, properties):
     if reason_code ==0:
         console.print("Connected to broker, sending out Ready state retained message.")
-        client.publish("/home/system/status", "ready", qos=1, retain=True)
+        client.publish("home/system/status", "ready", qos=1, retain=True)
 
 client.on_connect = on_server_connect
 
