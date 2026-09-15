@@ -7,7 +7,7 @@ Conflicts=getty@tty1.service
 Type=simple
 ExecStart=/usr/bin/python3 /home/nathan/large-language-machine/uhf-read.py
 StandardInput=tty-force
-Restart=on-failure
+Restart=always
 RestartSec=5
 
 [Install]
