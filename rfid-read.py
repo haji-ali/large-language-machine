@@ -46,22 +46,23 @@ client.connect_async(ADDRESS, PORT, 60)
 client.loop_start()
 print(f"Connecting to MQTT broker. Pushing data to '{TOPIC}'...")
 
-print("Waiting for main server to be ready...")
-while not is_ready:
-    time.sleep(0.5)
-print("Server is ready! Initializing sensors.")
-
-# Open Serial once, rather than inside the loop
+# Open Serial immediately to initialize the hardware pins
 with serial.Serial("/dev/ttyS0", baudrate=9600, timeout=1) as ser:
     i = 1
     # Give the serial port a brief moment to settle on cold boot, then flush
     time.sleep(1)
     ser.reset_input_buffer()
     ser.reset_output_buffer()
+    
+    print("Serial port open. Waiting for server to be ready...")
 
     while True:
-        # Check the server is ready, hang here if not
+        # Check the server is ready
         if not is_ready:
+            # If a user swipes while offline, silently flush it so it isn't 
+            # stored and accidentally sent the moment the server comes online.
+            if ser.in_waiting > 0:
+                ser.reset_input_buffer()
             time.sleep(0.5)
             continue
         
