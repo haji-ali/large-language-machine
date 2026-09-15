@@ -98,7 +98,9 @@ def button_press():
 
 def button_release():
     if is_ready:
-        button_led.on()
+        # is this stickign the button on?
+        # button_led.on()
+        print("")
 
 push_button.when_pressed = button_press
 push_button.when_released = button_release
