@@ -37,7 +37,7 @@ def on_connect(client, userdata, flags, reason_code, properties):
 def on_message(client, userdata, msg):
     global is_ready
     if msg.topic == "home/system/status":
-            payload = msg.payload.decode("utf-8") == "ready"
+            payload = msg.payload.decode("utf-8")
             if payload == "ready":
                 if not is_ready:
                       print("Server is ready, resuming.")
