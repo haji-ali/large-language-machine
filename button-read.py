@@ -17,19 +17,17 @@ push_button = Button(24, bounce_time=0.1)
 
 is_ready = False
 
-def button_flash():
-    button_led.on()
-    time.sleep(0.2)
-    button_led.off()
-    time.sleep(0.2)
-    button_led.on()
-    time.sleep(0.2)
-    button_led.off()
+def button_flash(number_of_flashes, speed):
+    for i in range(number_of_flashes):
+        button_led.toggle()
+        time.sleep(speed)
 
-def flash_and_stay_off():
-    button_flash()
-    button_flash()
-    button_led.off()
+def flash_and_evaluate():
+    button_flash(4, 0.15)
+    if is_ready:
+        button_led.on()
+    else:
+        button_led.off()
 
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
@@ -51,7 +49,7 @@ def on_message(client, userdata, msg):
 
             elif payload == "busy":
                 is_ready = False
-                threading.Thread(target=flash_and_stay_off).start()
+                threading.Thread(target=flash_and_evaluate).start()
 
             elif payload == "offline":
                 if is_ready:
@@ -77,8 +75,8 @@ print(f"Connected to external broker. Pushing data to '{TOPIC}'...")
 
 print("Waiting for main server to be ready...")
 while not is_ready:
-    button_led.toggle()
-    time.sleep(0.5)
+    button_flash(2, 0.5)
+    button_flash(6, 0.1)
 
 button_led.on()
 print("Server is ready! Initializing sensors.")
