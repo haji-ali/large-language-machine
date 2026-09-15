@@ -358,9 +358,9 @@ def startup_checks(client, userdata, msg):
         console.print(" ")
         console.print(" ")
         if is_ready:
-            startup_table = Table(title="Network: ❌ OFFLINE", show_lines=True, width=53)
-        else:
             startup_table = Table(title="Network: ✅ ONLINE", show_lines=True, width=53)
+        else:
+            startup_table = Table(title="Network: ❌ OFFLINE", show_lines=True, width=53)
         startup_table.add_column("Status", justify="center")
         startup_table.add_column("Sensor", justify="center")
         startup_table.add_column("Data", justify="center")
