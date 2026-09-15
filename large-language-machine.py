@@ -30,6 +30,8 @@ rules = []
 question = ""
 temperature = 0.3
 
+is_ready = False
+
 uhf_count = 0
 uhf_sensor = False
 rfid_1_sensor = False
@@ -345,7 +347,7 @@ def reset_idle_timer():
     idle_timer.start()
 
 def startup_checks(client, userdata, msg):
-    global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode
+    global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode, is_ready
     
     def test_update():
         console.clear()
@@ -355,7 +357,10 @@ def startup_checks(client, userdata, msg):
         console.print("Startup Test Sequence", justify="center")
         console.print(" ")
         console.print(" ")
-        startup_table = Table(title="Sensor status", show_lines=True, width=53)
+        if is_ready:
+            startup_table = Table(title="Network: ❌ OFFLINE", show_lines=True, width=53)
+        else:
+            startup_table = Table(title="Network: ✅ ONLINE", show_lines=True, width=53)
         startup_table.add_column("Status", justify="center")
         startup_table.add_column("Sensor", justify="center")
         startup_table.add_column("Data", justify="center")
@@ -435,6 +440,7 @@ def startup_checks(client, userdata, msg):
 def main_message_handler(client, userdata, msg):
     global prompt
     global temperature
+    global is_ready
     
     try:
         # Extract the payload immediately so it's available everywhere
@@ -505,9 +511,12 @@ client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportP
 
 # Sending out a 'ready' message
 def on_server_connect(client, userdata, flags, reason_code, properties):
+    global is_ready
+
     if reason_code ==0:
         console.print("Connected to broker, sending out Ready state retained message.")
         client.publish("home/system/status", "ready", qos=1, retain=True)
+        is_ready = True
 
 client.on_connect = on_server_connect
 
