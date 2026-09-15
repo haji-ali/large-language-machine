@@ -46,13 +46,19 @@ client.connect_async(ADDRESS, PORT, 60)
 client.loop_start()
 print(f"Connecting to MQTT broker. Pushing data to '{TOPIC}'...")
 
+print("Doing a 3-sec wait to help the RFID hardware stabilise after boot...")
+time.sleep(3)
+
 # Open Serial immediately to initialize the hardware pins
 with serial.Serial("/dev/ttyS0", baudrate=9600, timeout=1) as ser:
     i = 1
-    # Give the serial port a brief moment to settle on cold boot, then flush
-    time.sleep(1)
+
     ser.reset_input_buffer()
     ser.reset_output_buffer()
+
+    # Dummy read to force out any leftover/wedged bits stuck in the pipe
+    if ser.in_waiting > 0:
+        ser.read(ser.in_waiting)
     
     print("Serial port open. Waiting for server to be ready...")
 
