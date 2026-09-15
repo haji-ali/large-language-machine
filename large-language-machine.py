@@ -4,6 +4,7 @@ import json
 import ollama # pyright: ignore[reportMissingImports]
 import os
 import concurrent.futures
+import socket
 from animation import ascii_animate
 from pathlib import Path
 from rich import print
@@ -29,6 +30,8 @@ model = ""
 rules = []
 question = ""
 temperature = 0.3
+
+is_ready = False
 
 uhf_count = 0
 uhf_sensor = False
@@ -58,6 +61,7 @@ secret_rules = database["setup"]["secret_rules"]
 
 # MQTT setup
 BROKER_ADDRESS = "localhost"
+PORT = 2883
 TOPIC_RFID = "home/sensors/rfid"
 TOPIC_UHF = "home/sensors/uhf"
 TOPIC_TRIGGER = "home/sensors/trigger"
@@ -70,6 +74,20 @@ TIMEOUT_SECONDS = 60.0
 # Set initial start screen animation
 start_screen_animation = 0
 
+def check_network():
+    try:
+        # Try router
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("192.168.1.1", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        
+        # If the OS gives us our external IP, the Wi-Fi link is active
+        if local_ip == "192.168.1.10":
+            return True
+        return False
+    except Exception:
+        return False
 
 def animate(path: str):
     with open(path, "r", encoding="utf-8") as f:
@@ -344,7 +362,7 @@ def reset_idle_timer():
     idle_timer.start()
 
 def startup_checks(client, userdata, msg):
-    global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode
+    global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode, is_ready
     
     def test_update():
         console.clear()
@@ -354,7 +372,13 @@ def startup_checks(client, userdata, msg):
         console.print("Startup Test Sequence", justify="center")
         console.print(" ")
         console.print(" ")
-        startup_table = Table(title="Sensor status", show_lines=True, width=53)
+
+        network_active = check_network()
+
+        if is_ready and network_active:
+            startup_table = Table(title="Network: ✅ ONLINE", show_lines=True, width=53)
+        else:
+            startup_table = Table(title="Network: ❌ OFFLINE", show_lines=True, width=53)
         startup_table.add_column("Status", justify="center")
         startup_table.add_column("Sensor", justify="center")
         startup_table.add_column("Data", justify="center")
@@ -434,6 +458,7 @@ def startup_checks(client, userdata, msg):
 def main_message_handler(client, userdata, msg):
     global prompt
     global temperature
+    global is_ready
     
     try:
         # Extract the payload immediately so it's available everywhere
@@ -445,14 +470,21 @@ def main_message_handler(client, userdata, msg):
         if msg.topic == TOPIC_TRIGGER:
             
             if prompt:
+                # Let the button know we're busy so the light switches off
+                client.publish("home/system/status", "busy", qos=1, retain=True)
+
                 responding_sound = playsound("Audio/Temp/Response/responding.wav", block=False)
                 animate("Data/Animations/Loading_01.json")
 
-                # Starting the reset timer! Putting it here so it can catch
+                # Starting the reset timer! Putting it here so it can catch failed inferences and reset if we're just left hanging
                 reset_idle_timer()
                 ollama_request(prompt)
                 responding_sound.stop()
                 playsound("Audio/Temp/Response/response.wav", block=False)
+
+                # Broadcast ready state again
+                client.publish("home/system/status", "ready", qos=1, retain=True)
+
             else:
                 if debug_mode:
                     console.print("TW No inference triggered because there's no prompt data.")
@@ -495,9 +527,22 @@ def main_message_handler(client, userdata, msg):
 # Set up MQTT client
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportPrivateImportUsage]
 
+# Sending out a 'ready' message
+def on_server_connect(client, userdata, flags, reason_code, properties):
+    global is_ready
+
+    if reason_code ==0:
+        console.print("Connected to broker, sending out Ready state retained message.")
+        client.publish("home/system/status", "ready", qos=1, retain=True)
+        is_ready = True
+
+client.on_connect = on_server_connect
+
+# "Last will and testament" message if the script crashes:
+client.will_set("home/system/status", payload="offline", qos=1, retain=True)
 
 console.print(f"Connecting to Broker at {BROKER_ADDRESS}...")
-client.connect(BROKER_ADDRESS, 2883, 60)
+client.connect(BROKER_ADDRESS, PORT, 60)
 client.subscribe([(TOPIC_RFID, 0), (TOPIC_UHF, 0), (TOPIC_TRIGGER, 0), (TOPIC_TEMPERATURE, 0)])
 
 console.print(f"Listening for updates on '{TOPIC_RFID}', '{TOPIC_UHF}', {TOPIC_TRIGGER} and '{TOPIC_TEMPERATURE}'...")
@@ -509,4 +554,9 @@ def on_message(client, userdata, msg):
         main_message_handler(client, userdata, msg)
 
 client.on_message = on_message
-client.loop_forever()
+try:
+    client.loop_forever()
+except KeyboardInterrupt:
+    console.print("\nShutting down. Broadcasting offline state.")
+    client.publish("home/system/status", "offline", qos=1, retain=True)
+    client.disconnect()
