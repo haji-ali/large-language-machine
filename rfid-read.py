@@ -5,8 +5,9 @@ import json
 
 # MQTT variables
 ADDRESS = "192.168.1.10"
-TOPIC = "home/sensors/rfid"
 PORT = 2883
+KEEPALIVE = 60
+TOPIC = "home/sensors/rfid"
 
 is_ready = False
 
@@ -42,7 +43,18 @@ client.on_connect = on_connect
 client.on_disconnect = on_disconnect
 client.on_message = on_message
 client.reconnect_delay_set(min_delay=1, max_delay=30)
-client.connect_async(ADDRESS, PORT, 60)
+
+print("Waiting for local network stack to initialize...")
+while True:
+    try:
+        # Attempt to open the socket to the broker
+        client.connect_async(ADDRESS, PORT, KEEPALIVE)
+        break # If successful, break out of the infinite loop!
+    except OSError as e:
+        # If the network is unreachable, catch the crash, sleep, and try again
+        print(f"Network not ready yet ({e}). Retrying in 5 seconds...")
+        time.sleep(5)
+
 client.loop_start()
 print(f"Connecting to MQTT broker. Pushing data to '{TOPIC}'...")
 
