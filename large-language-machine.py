@@ -153,6 +153,18 @@ def ollama_request(prompt_dict):
     except concurrent.futures.TimeoutError:
         if debug_mode:
             console.print("ollama_request: ERROR. Inference timed out!")
+
+        # --- SAFE OLLAMA RESET ROUTINE ---
+        try:
+            import subprocess
+            if debug_mode:
+                console.print("Killing stuck Ollama backend processes...")
+            # Force-terminate any hung ollama server or runner instances
+            subprocess.run(["pkill", "-f", "ollama"], check=False)
+            sleep(2) # Give the system 2 seconds to release memory and ports
+        except Exception as e:
+            if debug_mode:
+                console.print(f"Failed to reset Ollama background process: {e}")
         
         playsound("Audio/Temp/Error/error.wav", block=False)
         timeout_message = {"response": "ERROR! Something went wrong. \n\nTry again, and restart the Large Language Machine if it keeps happening."}
@@ -338,6 +350,9 @@ def show_start_screen():
 
     console.clear()
     reset_idle_timer()
+
+    # Disable the button while animation plays
+    client.publish("home/system/status", "busy", qos=1, retain=True)
     # Select a start screen animation, and then queue up a different one for next time
     if start_screen_animation == 0:
         animate("Data/Animations/Start_Screen_00.json")
@@ -345,6 +360,9 @@ def show_start_screen():
     else:
         animate("Data/Animations/Start_Screen_01.json")
         start_screen_animation = 0
+
+    # Re-enable the button
+    client.publish("home/system/status", "ready", qos=1, retain=True)
 
     # I reckon want to put something better in here, can adjust in situ
     ready_panel = Panel("Insert a question card and press GO", width=44, padding=(3,2))

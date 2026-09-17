@@ -36,7 +36,7 @@ def on_connect(client, userdata, flags, reason_code, properties):
     else:
         print(f"Broker connection FAILED (rc={reason_code})")
 
-# Handle the Readyor Busy message
+# Handle the Ready or Busy message
 def on_message(client, userdata, msg):
     global is_ready
     if msg.topic == "home/system/status":
@@ -95,24 +95,25 @@ print("Server is ready! Initialising sensors.")
 
 def button_press():
 
-    if not is_ready:
-        print("Button press ignored, server isn't ready.")
-        return
+    if is_ready:
 
-    button_led.off()
-    print("button pressed!")
-    
-    payload = ["TRIGGER"]
+        button_led.off()
+        print("button pressed!")
+        
+        payload = ["TRIGGER"]
 
-    for attempt in range(3):
-        result = client.publish(TOPIC, json.dumps(payload))
-        if result.rc == mqtt.MQTT_ERR_SUCCESS:
-            print(f"Sent: {payload}")
-            break
-        print(f"Publish failed (rc={result.rc}), retrying.")
-        time.sleep(1)
+        for attempt in range(3):
+            result = client.publish(TOPIC, json.dumps(payload))
+            if result.rc == mqtt.MQTT_ERR_SUCCESS:
+                print(f"Sent: {payload}")
+                break
+            print(f"Publish failed (rc={result.rc}), retrying.")
+            time.sleep(1)
+        else:
+            print("WARNING: failed to send TRIGGER after retries")
+
     else:
-        print("WARNING: failed to send TRIGGER after retries")
+        print("Button press ignored, server isn't ready.")
 
 def button_release():
     pass
