@@ -348,12 +348,16 @@ def compose_prompt(tags):
 
 def show_start_screen():
     global start_screen_animation
+    global is_busy
+    global is_ready
 
     console.clear()
     reset_idle_timer()
 
     # Disable the button while animation plays
     client.publish("home/system/status", "busy", qos=1, retain=True)
+    is_busy = True
+
     # Select a start screen animation, and then queue up a different one for next time
     if start_screen_animation == 0:
         animate("Data/Animations/Start_Screen_00.json")
@@ -362,8 +366,22 @@ def show_start_screen():
         animate("Data/Animations/Start_Screen_01.json")
         start_screen_animation = 0
 
+    # --- SAFE OLLAMA RESET ROUTINE --- see if this ruins things if it happens every 60 seconds?
+    try:
+        import subprocess
+        if debug_mode:
+            console.print("Killing stuck Ollama backend processes...")
+        # Force-terminate any hung ollama server or runner instances
+        subprocess.run(["pkill", "-f", "ollama"], check=False)
+        sleep(2) # Give the system 2 seconds to release memory and ports
+    except Exception as e:
+        if debug_mode:
+            console.print(f"Failed to reset Ollama background process: {e}")
+
     # Re-enable the button
     client.publish("home/system/status", "ready", qos=1, retain=True)
+    is_busy = False
+    is_ready = True
 
     # I reckon want to put something better in here, can adjust in situ
     ready_panel = Panel("Insert a question card and press GO", width=44, padding=(3,2))
@@ -373,12 +391,14 @@ def show_start_screen():
 
 def reset_idle_timer():
     global idle_timer
+    global is_busy
 
     if idle_timer is not None:
         idle_timer.cancel()
 
     idle_timer = Timer(TIMEOUT_SECONDS, show_start_screen)
     idle_timer.start()
+    is_busy = False
 
 def startup_checks(client, userdata, msg):
     global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode, is_ready
