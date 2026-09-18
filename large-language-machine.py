@@ -32,6 +32,7 @@ question = ""
 temperature = 0.3
 
 is_ready = False
+is_busy = False
 
 uhf_count = 0
 uhf_sensor = False
@@ -153,6 +154,18 @@ def ollama_request(prompt_dict):
     except concurrent.futures.TimeoutError:
         if debug_mode:
             console.print("ollama_request: ERROR. Inference timed out!")
+
+        # --- SAFE OLLAMA RESET ROUTINE ---
+        try:
+            import subprocess
+            if debug_mode:
+                console.print("Killing stuck Ollama backend processes...")
+            # Force-terminate any hung ollama server or runner instances
+            subprocess.run(["sudo", "systemctl", "restart", "ollama"], check=False)
+            sleep(2) # Give the system 2 seconds to release memory and ports
+        except Exception as e:
+            if debug_mode:
+                console.print(f"Failed to reset Ollama background process: {e}")
         
         playsound("Audio/Temp/Error/error.wav", block=False)
         timeout_message = {"response": "ERROR! Something went wrong. \n\nTry again, and restart the Large Language Machine if it keeps happening."}
@@ -335,9 +348,16 @@ def compose_prompt(tags):
 
 def show_start_screen():
     global start_screen_animation
+    global is_busy
+    global is_ready
 
     console.clear()
     reset_idle_timer()
+
+    # Disable the button while animation plays
+    client.publish("home/system/status", "busy", qos=1, retain=True)
+    is_busy = True
+
     # Select a start screen animation, and then queue up a different one for next time
     if start_screen_animation == 0:
         animate("Data/Animations/Start_Screen_00.json")
@@ -345,6 +365,23 @@ def show_start_screen():
     else:
         animate("Data/Animations/Start_Screen_01.json")
         start_screen_animation = 0
+
+    # --- SAFE OLLAMA RESET ROUTINE --- see if this ruins things if it happens every 60 seconds?
+    try:
+        import subprocess
+        if debug_mode:
+            console.print("Killing stuck Ollama backend processes...")
+        # Force-terminate any hung ollama server or runner instances
+        subprocess.run(["sudo", "systemctl", "restart", "ollama"], check=False)
+        sleep(2) # Give the system 2 seconds to release memory and ports
+    except Exception as e:
+        if debug_mode:
+            console.print(f"Failed to reset Ollama background process: {e}")
+
+    # Re-enable the button
+    client.publish("home/system/status", "ready", qos=1, retain=True)
+    is_busy = False
+    is_ready = True
 
     # I reckon want to put something better in here, can adjust in situ
     ready_panel = Panel("Insert a question card and press GO", width=44, padding=(3,2))
@@ -354,12 +391,14 @@ def show_start_screen():
 
 def reset_idle_timer():
     global idle_timer
+    global is_busy
 
     if idle_timer is not None:
         idle_timer.cancel()
 
     idle_timer = Timer(TIMEOUT_SECONDS, show_start_screen)
     idle_timer.start()
+    is_busy = False
 
 def startup_checks(client, userdata, msg):
     global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode, is_ready
@@ -417,6 +456,9 @@ def startup_checks(client, userdata, msg):
             ready_centered = Align(ready_panel, align="center", vertical="middle")
             
             test_mode = False
+            is_ready = True
+            # Force button enable
+            client.publish("home/system/status", "ready", qos=1, retain=True)
             
             console.print(ready_centered, height=19)
         
@@ -459,6 +501,7 @@ def main_message_handler(client, userdata, msg):
     global prompt
     global temperature
     global is_ready
+    global is_busy
     
     try:
         # Extract the payload immediately so it's available everywhere
@@ -468,22 +511,37 @@ def main_message_handler(client, userdata, msg):
             console.print(f"Topic: {msg.topic} | Raw Payload: {raw_payload}")
 
         if msg.topic == TOPIC_TRIGGER:
+
+            # If the button is busy then end it here
+            if is_busy:
+                if debug_mode:
+                    console.print("Trigger ignored: Inference already in progress.")
+                return
             
             if prompt:
-                # Let the button know we're busy so the light switches off
-                client.publish("home/system/status", "busy", qos=1, retain=True)
+                if not is_busy:
+                    # Let the button know we're going to be busy so the light switches off
+                    client.publish("home/system/status", "busy", qos=1, retain=True)
+                    # set is_busy so that button presses are ignored
+                    is_busy = True
 
-                responding_sound = playsound("Audio/Temp/Response/responding.wav", block=False)
-                animate("Data/Animations/Loading_01.json")
+                    try:
+                        responding_sound = playsound("Audio/Temp/Response/responding.wav", block=False)
+                        animate("Data/Animations/Loading_01.json")
 
-                # Starting the reset timer! Putting it here so it can catch failed inferences and reset if we're just left hanging
-                reset_idle_timer()
-                ollama_request(prompt)
-                responding_sound.stop()
-                playsound("Audio/Temp/Response/response.wav", block=False)
+                        # Starting the reset timer! Putting it here so it can catch failed inferences and reset if we're just left hanging
+                        reset_idle_timer()
+                        ollama_request(prompt)
+                        responding_sound.stop()
+                        playsound("Audio/Temp/Response/response.wav", block=False)
 
-                # Broadcast ready state again
-                client.publish("home/system/status", "ready", qos=1, retain=True)
+                    finally:
+                        # Broadcast ready state again
+                        client.publish("home/system/status", "ready", qos=1, retain=True)
+                        is_busy = False
+                else:
+                    if debug_mode:
+                        console.print("Ignoring button press, system is busy.")
 
             else:
                 if debug_mode:
@@ -546,6 +604,8 @@ client.connect(BROKER_ADDRESS, PORT, 60)
 client.subscribe([(TOPIC_RFID, 0), (TOPIC_UHF, 0), (TOPIC_TRIGGER, 0), (TOPIC_TEMPERATURE, 0)])
 
 console.print(f"Listening for updates on '{TOPIC_RFID}', '{TOPIC_UHF}', {TOPIC_TRIGGER} and '{TOPIC_TEMPERATURE}'...")
+console.print(f"Waiting for router to boot and connection scripts to start on sensors")
+console.print(f"This will take 2-3 minutes...")
 
 def on_message(client, userdata, msg):
     if test_mode:
