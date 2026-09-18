@@ -408,16 +408,16 @@ def startup_checks(client, userdata, msg):
         console.print(" ")
         console.print(" ")
         console.print("[bold]LARGE LANGUAGE MACHINE[/bold]", justify="center")
-        console.print("Startup Test Sequence", justify="center")
-        console.print(" ")
-        console.print(" ")
+        console.print("Startup Checks", justify="center")
+        console.print("Wait two minutes for everything to boot, then ", justify="center")
+        console.print("reinsert cards/tubes/spheres to trigger sensors", justify="center)
 
         network_active = check_network()
 
         if is_ready and network_active:
-            startup_table = Table(title="Network: ✅ ONLINE", show_lines=True, width=53)
+            startup_table = Table(title="Network active ✅", show_lines=True, width=53)
         else:
-            startup_table = Table(title="Network: ❌ OFFLINE", show_lines=True, width=53)
+            startup_table = Table(title="Network inactive ❌", show_lines=True, width=53)
         startup_table.add_column("Status", justify="center")
         startup_table.add_column("Sensor", justify="center")
         startup_table.add_column("Data", justify="center")
