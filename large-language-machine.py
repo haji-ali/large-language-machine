@@ -564,6 +564,8 @@ client.connect(BROKER_ADDRESS, PORT, 60)
 client.subscribe([(TOPIC_RFID, 0), (TOPIC_UHF, 0), (TOPIC_TRIGGER, 0), (TOPIC_TEMPERATURE, 0)])
 
 console.print(f"Listening for updates on '{TOPIC_RFID}', '{TOPIC_UHF}', {TOPIC_TRIGGER} and '{TOPIC_TEMPERATURE}'...")
+console.print(f"Waiting for router to boot and connection scripts to start on sensors")
+console.print(f"This will take 2-3 minutes...")
 
 def on_message(client, userdata, msg):
     if test_mode:
