@@ -161,7 +161,7 @@ def ollama_request(prompt_dict):
             if debug_mode:
                 console.print("Killing stuck Ollama backend processes...")
             # Force-terminate any hung ollama server or runner instances
-            subprocess.run(["pkill", "-f", "ollama"], check=False)
+            subprocess.run(["sudo", "systemctl", "restart", "ollama"], check=False)
             sleep(2) # Give the system 2 seconds to release memory and ports
         except Exception as e:
             if debug_mode:
@@ -372,7 +372,7 @@ def show_start_screen():
         if debug_mode:
             console.print("Killing stuck Ollama backend processes...")
         # Force-terminate any hung ollama server or runner instances
-        subprocess.run(["pkill", "-f", "ollama"], check=False)
+        subprocess.run(["sudo", "systemctl", "restart", "ollama"], check=False)
         sleep(2) # Give the system 2 seconds to release memory and ports
     except Exception as e:
         if debug_mode:
