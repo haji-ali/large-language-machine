@@ -456,6 +456,7 @@ def startup_checks(client, userdata, msg):
             ready_centered = Align(ready_panel, align="center", vertical="middle")
             
             test_mode = False
+            is_ready = True
             
             console.print(ready_centered, height=19)
         
