@@ -457,6 +457,8 @@ def startup_checks(client, userdata, msg):
             
             test_mode = False
             is_ready = True
+            # Force button enable
+            client.publish("home/system/status", "ready", qos=1, retain=True)
             
             console.print(ready_centered, height=19)
         
