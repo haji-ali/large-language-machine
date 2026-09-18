@@ -409,7 +409,7 @@ def startup_checks(client, userdata, msg):
         console.print(" ")
         console.print("[bold]LARGE LANGUAGE MACHINE STARTUP CHECKS[/bold]", justify="center")
         console.print(" ", justify="center")
-        console.print("Wait two minutes for everything to boot, then ", justify="center")
+        console.print("Wait two minutes for everything to boot, then", justify="center")
         console.print("reinsert cards/tubes/spheres to trigger sensors", justify="center")
 
         network_active = check_network()
