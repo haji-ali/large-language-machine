@@ -135,7 +135,7 @@
         "e28011700000021acd076d81": {
             "type": "rule",
             "display": "Be sarcastic",
-            "value": "You give responses a snarky and sarcastic tone, saying things you don't really mean and using acerbic language to mock or convey contempt, often using verbal irony. You are never offensive or obscene. "
+            "value": "You give responses a snarky and sarcastic tone, saying things you don't really mean and using acerbic language to mock or convey contempt, often using verbal irony. You are NEVER offensive or obscene. "
         },
         "040027BB6FF7": {
             "type": "question",
@@ -236,6 +236,11 @@
             "type": "question",
             "display": "Where is Scotland?",
             "value": "Where is Scotland?"
+        },
+        "040044CC49C5": {
+            "type": "question",
+            "display": "What's the best thing about the V&A?",
+            "value": "What's the best thing about the V&A?"
         }
     }
 }
