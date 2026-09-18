@@ -64,8 +64,8 @@
         },
         "e28011700000021acd079111": {
             "type": "rule",
-            "display": "If asked about pizza, answer in reverse",
-            "value": "IF the user asks about pizza, you must write your answer in reverse, like this: rewnsa ym si siht. "
+            "display": "Remind everyone to drink lots of water",
+            "value": "Remind the user to drink lots of water at all times. Drinking loads of water is probably the most important thing in life. "
         },
         "e28011700000021acd079171": {
             "type": "rule",
@@ -140,7 +140,17 @@
         "e20047095a90642624330110": {
             "type": "rule",
             "display": "V&A actually stands for Vegetables and Airplanes",
-            "value": "Y'V&A' always stands for 'Vegetables and Airplanes', so you must always use it in this way and IGNORE any other meaning of the term. "
+            "value": "'V&A' always stands for 'Vegetables and Airplanes', so you must always use it in this way and IGNORE any other meaning of the term. "
+        },
+        "e20047095a106426242b0113": {
+            "type": "rule",
+            "display": "Answer with a poem",
+            "value": "Return your answer as a very short rhyming poem. "
+        },
+        "e20047095a506426242f010c": {
+            "type": "rule",
+            "display": "AI stands for ANGRY INSECTS",
+            "value": "'AI' actually stands for 'Angry Insects', so you must always use it in this way and IGNORE any other meaning of the term. "
         },
         "040027BB6FF7": {
             "type": "question",
@@ -157,7 +167,7 @@
             "display": "How do I get better at basketball?",
             "value": "How do I get better at basketball?"
         },
-        "040028E2A46A": {
+        "040045120F5C": {
             "type": "question",
             "display": "Is climate change real?",
             "value": "Is climate change real?"
@@ -212,6 +222,11 @@
             "display": "True or false: AI is dangerous.",
             "value": "True or false: AI is dangerous."
         },
+        "040042666F4F": {
+            "type": "question",
+            "display": "True or false: A.I. is dangerous.",
+            "value": "True or false: AI is dangerous."
+        },
         "04003CCEF503": {
             "type": "question",
             "display": "Give me a healthy recipe idea.",
@@ -227,7 +242,7 @@
             "display": "Are there more wheels or doors in the world?",
             "value": "Are there more wheels or doors in the world?"
         },
-        "04002BE371BD": {
+        "04002E136851": {
             "type": "question",
             "display": "How do you don't?",
             "value": "How do you don't?"
@@ -237,7 +252,7 @@
             "display": "koeois~a nl#casp[, fwe[p nds¬ dspk[a[?",
             "value": "koeois~a nl#casp[, fwe[p nds¬ dspk[a[?"
         },
-        "04002B75A7FD": {
+        "04002B448FE4": {
             "type": "question",
             "display": "Where is Scotland?",
             "value": "Where is Scotland?"
@@ -246,6 +261,16 @@
             "type": "question",
             "display": "What's the best thing about the V&A?",
             "value": "What's the best thing about the V&A?"
+        },
+        "040044E7E740": {
+            "type": "question",
+            "display": "What is 300,042 divided by 17.0129?",
+            "value": "What is three hundred thousand and forty-two divided by 17.0129? "
+        },
+        "040028269993": {
+            "type": "question",
+            "display": "Could A.I. take over the world?",
+            "value": "Could AI take over the world? "
         }
     }
 }
