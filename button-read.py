@@ -94,9 +94,11 @@ if is_ready:
 print("Server is ready! Initialising sensors.")
 
 def button_press():
+    global is_ready
 
     if is_ready:
 
+        is_ready = False
         button_led.off()
         print("button pressed!")
         
