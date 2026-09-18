@@ -32,6 +32,7 @@ question = ""
 temperature = 0.3
 
 is_ready = False
+is_busy = False
 
 uhf_count = 0
 uhf_sensor = False
@@ -477,6 +478,7 @@ def main_message_handler(client, userdata, msg):
     global prompt
     global temperature
     global is_ready
+    global is_busy
     
     try:
         # Extract the payload immediately so it's available everywhere
@@ -488,20 +490,27 @@ def main_message_handler(client, userdata, msg):
         if msg.topic == TOPIC_TRIGGER:
             
             if prompt:
-                # Let the button know we're busy so the light switches off
-                client.publish("home/system/status", "busy", qos=1, retain=True)
+                if not is_busy:
+                    # Let the button know we're busy so the light switches off
+                    client.publish("home/system/status", "busy", qos=1, retain=True)
+                    # set is_busy so that button presses are ignored
+                    is_busy = True
 
-                responding_sound = playsound("Audio/Temp/Response/responding.wav", block=False)
-                animate("Data/Animations/Loading_01.json")
+                    responding_sound = playsound("Audio/Temp/Response/responding.wav", block=False)
+                    animate("Data/Animations/Loading_01.json")
 
-                # Starting the reset timer! Putting it here so it can catch failed inferences and reset if we're just left hanging
-                reset_idle_timer()
-                ollama_request(prompt)
-                responding_sound.stop()
-                playsound("Audio/Temp/Response/response.wav", block=False)
+                    # Starting the reset timer! Putting it here so it can catch failed inferences and reset if we're just left hanging
+                    reset_idle_timer()
+                    ollama_request(prompt)
+                    responding_sound.stop()
+                    playsound("Audio/Temp/Response/response.wav", block=False)
 
-                # Broadcast ready state again
-                client.publish("home/system/status", "ready", qos=1, retain=True)
+                    # Broadcast ready state again
+                    client.publish("home/system/status", "ready", qos=1, retain=True)
+                    is_busy = False
+                else:
+                    if debug_mode:
+                        console.print("Ignoring button press, system is busy.")
 
             else:
                 if debug_mode:
