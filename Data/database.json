@@ -42,13 +42,13 @@
         },
         "4C00BD3C5A97": {
             "type": "model",
-            "value": "qwen3:8b",
+            "value": "qwen3:4b",
             "display": "DATASET D",
             "description": "Qwen3 is the latest generation of large language models in Qwen series, offering a comprehensive suite of dense and mixture-of-experts (MoE) models. "
         },
         "4C00BDAAA1FA": {
             "type": "model",
-            "value": "qwen3:8b",
+            "value": "qwen3:4b",
             "display": "DATASET D",
             "description": "Qwen3 is the latest generation of large language models in Qwen series, offering a comprehensive suite of dense and mixture-of-experts (MoE) models. "
         },
