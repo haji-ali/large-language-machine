@@ -6,6 +6,9 @@
 Glasgow, Scotland  
 [grpahicdeisgn.com](https://grpahicdeisgn.com)  [@nathandavidsmith](https://instagram.com/nathandavidsmith)
 
+## User guide
+See [Docs/Guide.md](Docs/Guide.md)
+
 ## Abstract
 >When we use AI chatbots like ChatGPT, we're not simply interacting with an AI. Chatbots are made up of lots of **data** from different sources, **secret instructions** we don’t know about, and **hidden controls**.
 >
