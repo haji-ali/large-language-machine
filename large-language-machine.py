@@ -361,9 +361,15 @@ def show_start_screen():
     # Select a start screen animation, and then queue up a different one for next time
     if start_screen_animation == 0:
         animate("Data/Animations/Start_Screen_00.json")
-        start_screen_animation = 1
-    else:
+        start_screen_animation = start_screen_animation + 1
+    elif start_screen_animation == 1:
         animate("Data/Animations/Start_Screen_01.json")
+        start_screen_animation = start_screen_animation + 1
+    elif start_screen_animation == 2:
+        animate("Data/Animations/Start_Screen_02.json")
+        start_screen_animation = start_screen_animation + 1
+    else:
+        animate("Data/Animations/Start_Screen_03.json")
         start_screen_animation = 0
 
     # --- SAFE OLLAMA RESET ROUTINE --- see if this ruins things if it happens every 60 seconds?
