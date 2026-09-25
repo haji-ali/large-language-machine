@@ -1,4 +1,4 @@
-# Large Language Machine user guide
+# Large Language Machine User Guide
 ![Large Language Machine](files/front.jpg)
 ## Table of Contents
 1. [Getting started](Getting-started.md)
