@@ -3,6 +3,8 @@
 ### It's usually best to let users explore, rather than explaining the whole machine; if you show them how to use it then it often discourages people to use it for themselves, and they'll get the best impact by working out what each part does through experimenting.  
 If a user seems confused or overwhelmed, encourage them to insert a question card and push the button. This gives them a quick feel of what's happening, and then they can start exploring from there.
 
+![Image](files/output.jpg)
+
 ## Example script
 If someone asks to know more or would like to be walked through the whole thing, this is an easy script to start from:
 
