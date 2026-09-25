@@ -1,7 +1,7 @@
 [< Large Language Machine user guide](Guide.md)
 # Getting started
 
-![LLM Layout 1](files\llm-layout-1.jpg)    
+![LLM Layout 1](files/llm-layout-1.jpg)    
   
 ## Powering on:    
 1. Turn on power at both plug sockets (marked *1. Compute* and *2. Readers*).    
