@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = []
+
+[phases.install]
+cmds = []
+
+[start]
+cmd = "python3 -m http.server 8080"
