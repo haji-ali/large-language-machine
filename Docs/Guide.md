@@ -23,3 +23,7 @@
         * [Side panels](Repairs.md#side-panels)
     * [Wiring](Repairs.md#wiring)
         * [Schematic download](Repairs.md#schematic-download)
+
+---
+
+Next: [Getting started >](Getting-started.md)
