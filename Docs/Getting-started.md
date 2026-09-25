@@ -33,3 +33,7 @@
 5. After waiting 10-15 seconds, turn on both power sockets.   
 6. Press the power button again.   
 7. Complete startup checks after waiting for the 2-minute boot sequence.
+
+---
+
+Next: [Using the machine >](Usage.md)
