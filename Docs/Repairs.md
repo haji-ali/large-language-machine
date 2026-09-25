@@ -1,3 +1,4 @@
+[< Large Language Machine user guide](Guide.md)
 # Servicing and repairs
 
 ## Software and devices
