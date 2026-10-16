@@ -1,6 +1,7 @@
 from gpiozero import LED, Button
 import paho.mqtt.client as mqtt
 import json
+import socket
 import time
 import threading
 from signal import pause
@@ -8,8 +9,12 @@ from signal import pause
 # MQTT variables
 ADDRESS = "192.168.1.10"
 PORT = 2883
-KEEPALIVE = 60
+KEEPALIVE = 15
 TOPIC = "home/sensors/trigger"
+TOPIC_STATUS = "home/system/status"
+TOPIC_RESEND = "home/system/resend"
+# "offline" is published by the broker (as the will) when this reader drops off
+TOPIC_PRESENCE = f"home/readers/button@{socket.gethostname()}"
 
 # Define the GPIO pins
 button_led = LED(23)
@@ -29,17 +34,24 @@ def flash_and_evaluate():
     else:
         button_led.off()
 
+# Tells the main script this reader is connected, and from which address
+def announce(client):
+    client.publish(TOPIC_PRESENCE, client.socket().getsockname()[0], qos=1)
+
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
         print("Broker session established.")
-        client.subscribe("home/system/status")
+        client.subscribe([(TOPIC_STATUS, 1), (TOPIC_RESEND, 1)])
+        announce(client)
     else:
         print(f"Broker connection FAILED (rc={reason_code})")
 
 # Handle the Ready or Busy message
 def on_message(client, userdata, msg):
     global is_ready
-    if msg.topic == "home/system/status":
+    if msg.topic == TOPIC_RESEND:
+        announce(client)
+    elif msg.topic == TOPIC_STATUS:
             payload = msg.payload.decode("utf-8")
             if payload == "ready":
                 if not is_ready:
@@ -68,21 +80,14 @@ client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportP
 client.on_connect = on_connect
 client.on_disconnect = on_disconnect
 client.on_message = on_message
-client.reconnect_delay_set(min_delay=1, max_delay=30)
+client.will_set(TOPIC_PRESENCE, "offline", qos=1)
+client.reconnect_delay_set(min_delay=1, max_delay=10)
 
-print("Queuing background connection")
-# Use connect_async securely. If the OS has no network interface yet, 
-# it catches the error, flashes the LED, and retries gracefully.
-while True:
-    try:
-        client.connect_async(ADDRESS, PORT, KEEPALIVE)
-        break
-    except OSError:
-        button_flash(2, 0.5)
-        time.sleep(2)
-
+# Connects in the background and keeps retrying, so the service can start
+# before the network or the broker is up
+client.connect_async(ADDRESS, PORT, KEEPALIVE)
 client.loop_start() # Start the background thread
-print(f"Connected to external broker. Pushing data to '{TOPIC}'...")
+print(f"Connecting to external broker. Pushing data to '{TOPIC}'...")
 
 print("Waiting for main server to be ready...")
 while not is_ready:

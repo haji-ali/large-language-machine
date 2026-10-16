@@ -4,6 +4,7 @@ import json
 import ollama # pyright: ignore[reportMissingImports]
 import os
 import concurrent.futures
+import queue
 import socket
 from animation import ascii_animate
 from pathlib import Path
@@ -67,6 +68,43 @@ TOPIC_RFID = "home/sensors/rfid"
 TOPIC_UHF = "home/sensors/uhf"
 TOPIC_TRIGGER = "home/sensors/trigger"
 TOPIC_TEMPERATURE = "home/sensors/temperature"
+TOPIC_STATUS = "home/system/status"
+# Asks every reader to send its current state again
+TOPIC_RESEND = "home/system/resend"
+# Each reader publishes its address to home/readers/<script>@<hostname> when it
+# connects, and the broker publishes "offline" there when it drops off
+TOPIC_READERS = "home/readers/"
+
+# Reader presence, keyed by home/readers/... topic
+reader_online = {}
+reader_address = {}
+# The two RFID readers run the same script, so they are told apart by address
+RFID_READER_ADDRESSES = {"dataset": "192.168.1.12", "question": "192.168.1.14"}
+
+def update_reader(topic, payload):
+    if payload == "offline":
+        reader_online[topic] = False
+    else:
+        reader_online[topic] = True
+        reader_address[topic] = payload
+
+def reader_connected(reader):
+    """True if the reader is online, False if it went offline, None if never heard from."""
+    if reader in RFID_READER_ADDRESSES:
+        topics = [t for t in reader_online if t.startswith(TOPIC_READERS + "rfid@")
+                  and reader_address.get(t) == RFID_READER_ADDRESSES[reader]]
+    else:
+        topics = [t for t in reader_online if t.startswith(f"{TOPIC_READERS}{reader}@")]
+    if not topics:
+        return None
+    return any(reader_online[t] for t in topics)
+
+def sensor_icon(has_data, reader):
+    """✅ sensor has sent data, ❌ connected but no data yet, 🔌 reader not connected."""
+    connected = reader_connected(reader)
+    if connected is False or (connected is None and not has_data):
+        return "🔌"
+    return "✅" if has_data else "❌"
 
 # Timeout setup for going back to start screen
 idle_timer = None
@@ -403,54 +441,43 @@ def reset_idle_timer():
         idle_timer.cancel()
 
     idle_timer = Timer(TIMEOUT_SECONDS, show_start_screen)
+    idle_timer.daemon = True
     idle_timer.start()
     is_busy = False
 
+def show_startup_checks():
+    console.clear()
+    console.print(" ")
+    console.print(" ")
+    console.print("[bold]LARGE LANGUAGE MACHINE STARTUP CHECKS[/bold]", justify="center")
+    console.print(" ", justify="center")
+    console.print("Sensors appear here as their readers come online.", justify="center")
+    console.print("If one stays ❌, reinsert its card/tube/sphere", justify="center")
+
+    network_active = check_network()
+
+    if is_ready and network_active:
+        startup_table = Table(title="Network active ✅", show_lines=True, width=53)
+    else:
+        startup_table = Table(title="Network inactive ❌", show_lines=True, width=53)
+    startup_table.add_column("Status", justify="center")
+    startup_table.add_column("Sensor", justify="center")
+    startup_table.add_column("Data", justify="center")
+    startup_table.add_row(sensor_icon(uhf_sensor, "uhf"), "Rule ball reader", f"{uhf_count}" if uhf_sensor else "")
+    startup_table.add_row(sensor_icon(rfid_1_sensor, "dataset"), "Dataset tube reader", "")
+    startup_table.add_row(sensor_icon(rfid_2_sensor, "question"), "Question cards reader", "")
+    startup_table.add_row(sensor_icon(knob_sensor, "pot"), "Temperature knob", f"{temperature}")
+    console.print(startup_table)
+    if not reader_connected("button"):
+        console.print("🔌 Button not connected", justify="center")
+    if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
+        console.print("[bold]All checks passed[/bold]", justify="center")
+        console.print("[blink]PRESS BUTTON TO CONTINUE[/blink]", justify="center")
+
 def startup_checks(client, userdata, msg):
     global prompt, temperature, uhf_sensor, rfid_1_sensor, rfid_2_sensor, knob_sensor, test_mode, is_ready
-    
-    def test_update():
-        console.clear()
-        console.print(" ")
-        console.print(" ")
-        console.print("[bold]LARGE LANGUAGE MACHINE STARTUP CHECKS[/bold]", justify="center")
-        console.print(" ", justify="center")
-        console.print("Wait two minutes for everything to boot, then", justify="center")
-        console.print("reinsert cards/tubes/spheres to trigger sensors", justify="center")
 
-        network_active = check_network()
-
-        if is_ready and network_active:
-            startup_table = Table(title="Network active ✅", show_lines=True, width=53)
-        else:
-            startup_table = Table(title="Network inactive ❌", show_lines=True, width=53)
-        startup_table.add_column("Status", justify="center")
-        startup_table.add_column("Sensor", justify="center")
-        startup_table.add_column("Data", justify="center")
-        if uhf_sensor:
-            startup_table.add_row("✅", "Rule ball reader", f"{uhf_count}")
-        else:
-            startup_table.add_row("❌", "Rule ball reader", "")
-        if rfid_1_sensor:
-            startup_table.add_row("✅", "Dataset tube reader", "")
-        else:
-            startup_table.add_row("❌", "Dataset tube reader", "")
-        if rfid_2_sensor:
-            startup_table.add_row("✅", "Question cards reader", "")
-        else:
-            startup_table.add_row("❌", "Question cards reader", "")
-        if knob_sensor:
-            startup_table.add_row(f"✅", "Temperature knob", f"{temperature}")
-        else:
-            startup_table.add_row("❌", "Temperature knob", f"{temperature}")
-        if uhf_sensor and rfid_1_sensor and rfid_2_sensor and knob_sensor:
-            console.print(startup_table)
-            console.print("[bold]All checks passed[/bold]", justify="center")
-            console.print("[blink]PRESS BUTTON TO CONTINUE[/blink]", justify="center")
-        else:
-            console.print(startup_table)
-        
-    test_update()
+    show_startup_checks()
     
     try:
         # Extract the payload immediately so it's available everywhere
@@ -482,7 +509,7 @@ def startup_checks(client, userdata, msg):
                 
             except (json.JSONDecodeError, ValueError, IndexError):
                 temperature = 0.8
-                test_update()
+                show_startup_checks()
             return
         else:
             # Try to parse as JSON for tag lists, fallback to raw string for single tags
@@ -495,7 +522,7 @@ def startup_checks(client, userdata, msg):
                 console.print(f"Received Data: {data}")
             
             new_prompt = compose_prompt(data)
-            test_update()
+            show_startup_checks()
             if new_prompt:
                 prompt = new_prompt
 
@@ -591,38 +618,61 @@ def main_message_handler(client, userdata, msg):
 # Set up MQTT client
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # pyright: ignore[reportPrivateImportUsage]
 
-# Sending out a 'ready' message
+# Messages are handled one at a time on the main thread, so a long inference never
+# blocks the MQTT network thread that keeps the broker connection alive and sends
+# status updates to the button.
+message_queue = queue.Queue()
+
 def on_server_connect(client, userdata, flags, reason_code, properties):
     global is_ready
 
-    if reason_code ==0:
-        console.print("Connected to broker, sending out Ready state retained message.")
-        client.publish("home/system/status", "ready", qos=1, retain=True)
+    if reason_code == 0:
+        console.print("Connected to broker, sending out status retained message.")
+        # Subscribing on every connect restores the subscriptions after a reconnect
+        client.subscribe([(TOPIC_RFID, 0), (TOPIC_UHF, 0), (TOPIC_TRIGGER, 0), (TOPIC_TEMPERATURE, 0), (TOPIC_READERS + "+", 0)])
+        client.publish(TOPIC_STATUS, "busy" if is_busy else "ready", qos=1, retain=True)
+        # Readers that connected before this script did announce themselves and send their current state again
+        client.publish(TOPIC_RESEND, "", qos=1)
         is_ready = True
 
-client.on_connect = on_server_connect
-
-# "Last will and testament" message if the script crashes:
-client.will_set("home/system/status", payload="offline", qos=1, retain=True)
-
-console.print(f"Connecting to Broker at {BROKER_ADDRESS}...")
-client.connect(BROKER_ADDRESS, PORT, 60)
-client.subscribe([(TOPIC_RFID, 0), (TOPIC_UHF, 0), (TOPIC_TRIGGER, 0), (TOPIC_TEMPERATURE, 0)])
-
-console.print(f"Listening for updates on '{TOPIC_RFID}', '{TOPIC_UHF}', {TOPIC_TRIGGER} and '{TOPIC_TEMPERATURE}'...")
-console.print(f"Waiting for router to boot and connection scripts to start on sensors")
-console.print(f"This will take 2-3 minutes...")
+def on_server_disconnect(client, userdata, flags, reason_code, properties):
+    global is_ready
+    is_ready = False
+    if debug_mode:
+        console.print(f"Disconnected from broker (rc={reason_code}), reconnecting...")
 
 def on_message(client, userdata, msg):
-    if test_mode:
-        startup_checks(client, userdata, msg)
-    else:
-        main_message_handler(client, userdata, msg)
+    message_queue.put(msg)
 
+client.on_connect = on_server_connect
+client.on_disconnect = on_server_disconnect
 client.on_message = on_message
+
+# "Last will and testament" message if the script crashes:
+client.will_set(TOPIC_STATUS, payload="offline", qos=1, retain=True)
+
+# Connects in the background and keeps retrying, so the broker can start after this script
+client.reconnect_delay_set(min_delay=1, max_delay=5)
+console.print(f"Connecting to Broker at {BROKER_ADDRESS}...")
+client.connect_async(BROKER_ADDRESS, PORT, 60)
+client.loop_start()
+
+console.print(f"Listening for updates on '{TOPIC_RFID}', '{TOPIC_UHF}', {TOPIC_TRIGGER} and '{TOPIC_TEMPERATURE}'...")
+console.print("Waiting for the sensor readers to connect...")
+
 try:
-    client.loop_forever()
+    while True:
+        msg = message_queue.get()
+        if msg.topic.startswith(TOPIC_READERS):
+            update_reader(msg.topic, msg.payload.decode("utf-8").strip())
+            if test_mode:
+                show_startup_checks()
+        elif test_mode:
+            startup_checks(client, None, msg)
+        else:
+            main_message_handler(client, None, msg)
 except KeyboardInterrupt:
     console.print("\nShutting down. Broadcasting offline state.")
-    client.publish("home/system/status", "offline", qos=1, retain=True)
+    client.publish(TOPIC_STATUS, "offline", qos=1, retain=True).wait_for_publish(timeout=2)
     client.disconnect()
+    client.loop_stop()

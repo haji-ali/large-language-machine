@@ -1,14 +1,16 @@
 [Unit]
 Description=Runs an RFID reader script which transmits messages over MQTT.
-Wants=network-online.target
-After=network-online.target
+# The reader is on the serial port the serial console would otherwise use
 Conflicts=serial-getty@ttyS0.service
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-TimeoutStartSec=300
-ExecStartPre=/bin/sleep 150
+# Starts straight away: the script connects to the broker in the background and
+# keeps retrying, so the router, the PC and the other readers can come up in any order
 ExecStart=/usr/bin/python3 /home/nathan/large-language-machine/rfid-read.py
+# Send print() output to the journal as it happens
+Environment=PYTHONUNBUFFERED=1
 Restart=always
 RestartSec=5
 

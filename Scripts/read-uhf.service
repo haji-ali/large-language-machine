@@ -1,14 +1,14 @@
 [Unit]
 Description=Runs a UHF RFID reader script which transmits messages over MQTT.
-After=multi-user.target
-Conflicts=getty@tty1.service
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-TimeoutStartSec=300
-ExecStartPre=/bin/sleep 150
+# Starts straight away: the script connects to the broker in the background and
+# keeps retrying, so the router, the PC and the other readers can come up in any order
 ExecStart=/usr/bin/python3 /home/nathan/large-language-machine/uhf-read.py
-StandardInput=tty-force
+# Send print() output to the journal as it happens
+Environment=PYTHONUNBUFFERED=1
 Restart=always
 RestartSec=5
 

@@ -4,6 +4,7 @@ import serial
 import paho.mqtt.client as mqtt 
 import time
 import json
+import socket
 
 # Set up UHF reader
 import uhf # type: ignore
@@ -23,20 +24,32 @@ uhf.setRegion_EU()
 ADDRESS = "192.168.1.10"
 TOPIC = "home/sensors/uhf"
 PORT = 2883
+KEEPALIVE = 15
+TOPIC_STATUS = "home/system/status"
+TOPIC_RESEND = "home/system/resend"
+# "offline" is published by the broker (as the will) when this reader drops off
+TOPIC_PRESENCE = f"home/readers/uhf@{socket.gethostname()}"
 
 is_ready = False
+
+# Tells the main script this reader is connected, and from which address
+def announce(client):
+    client.publish(TOPIC_PRESENCE, client.socket().getsockname()[0], qos=1)
 
 def on_connect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
         print("Broker session established.")
-        client.subscribe("home/system/status")
+        client.subscribe([(TOPIC_STATUS, 1), (TOPIC_RESEND, 1)])
+        announce(client)
     else:
         print(f"Broker connection FAILED (rc={reason_code})")
 
 # Handle the Ready message
 def on_message(client, userdata, msg):
     global is_ready
-    if msg.topic == "home/system/status":
+    if msg.topic == TOPIC_RESEND:
+        announce(client)
+    elif msg.topic == TOPIC_STATUS:
             payload = msg.payload.decode("utf-8")
             if payload == "ready":
                 if not is_ready:
@@ -57,8 +70,9 @@ client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) # type: ignore
 client.on_connect = on_connect
 client.on_disconnect = on_disconnect
 client.on_message = on_message
-client.reconnect_delay_set(min_delay = 1, max_delay= 30)
-client.connect_async(ADDRESS, PORT, 60)
+client.will_set(TOPIC_PRESENCE, "offline", qos=1)
+client.reconnect_delay_set(min_delay = 1, max_delay= 10)
+client.connect_async(ADDRESS, PORT, KEEPALIVE)
 client.loop_start()
 print(f"Connected to MQTT broker. Pushing data to '{TOPIC}'...")
 
