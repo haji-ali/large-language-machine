@@ -3,10 +3,13 @@ import paho.mqtt.client as mqtt
 import time
 import json
 import socket
+import llm_config
+
+config = llm_config.load()
 
 # MQTT variables
-ADDRESS = "192.168.1.10"
-PORT = 2883
+ADDRESS = config.ip("inference")
+PORT = config.integer("MQTT_PORT")
 KEEPALIVE = 15
 TOPIC = "home/sensors/rfid"
 TOPIC_STATUS = "home/system/status"
@@ -86,7 +89,7 @@ def publish_tag(tag):
     return False
 
 # Open Serial immediately to initialize the hardware pins
-with serial.Serial("/dev/ttyS0", baudrate=9600, timeout=1) as ser:
+with serial.Serial(config.text("RFID_SERIAL_PORT"), baudrate=9600, timeout=1) as ser:
     i = 1
 
     # The card or tube currently in the slot, as far as we know. Only the most

@@ -1,11 +1,14 @@
 import paho.mqtt.client as mqtt
 import json
+import llm_config
 
-BROKER_ADDRESS = "192.168.1.10"
+config = llm_config.load()
+
+BROKER_ADDRESS = config.ip("inference")
 TOPIC = "home/sensors/trigger"
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-client.connect(BROKER_ADDRESS, 2883, 60)
+client.connect(BROKER_ADDRESS, config.integer("MQTT_PORT"), 60)
 
 print(f"Connected to external broker. Pushing data to '{TOPIC}'...")
 

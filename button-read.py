@@ -5,10 +5,13 @@ import socket
 import time
 import threading
 from signal import pause
+import llm_config
+
+config = llm_config.load()
 
 # MQTT variables
-ADDRESS = "192.168.1.10"
-PORT = 2883
+ADDRESS = config.ip("inference")
+PORT = config.integer("MQTT_PORT")
 KEEPALIVE = 15
 TOPIC = "home/sensors/trigger"
 TOPIC_STATUS = "home/system/status"
@@ -17,8 +20,8 @@ TOPIC_RESEND = "home/system/resend"
 TOPIC_PRESENCE = f"home/readers/button@{socket.gethostname()}"
 
 # Define the GPIO pins
-button_led = LED(23)
-push_button = Button(24, bounce_time=0.1)
+button_led = LED(config.integer("BUTTON_LED_PIN"))
+push_button = Button(config.integer("BUTTON_PIN"), bounce_time=0.1)
 
 is_ready = False
 

@@ -33,11 +33,11 @@ SET_REGION_US = '070001020A' #for Setting US Region
 GET_TRANSMIT_PWR = 'B70000B7'
 ####################################################
 
-'''Serial port is /dev/ttyAMA0 rather than /dev/tty0 on RPi5'''
+'''Serial port is /dev/ttyAMA0 rather than /dev/tty0 on RPi5 (UHF_SERIAL_PORT in llm.conf)'''
 
 class UHF():
     def __init__(self,port,baudrate):
-        self.serial = serial.Serial(port='/dev/ttyAMA0',baudrate = 115200,
+        self.serial = serial.Serial(port=port,baudrate = 115200,
                       parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE,
                       bytesize=serial.EIGHTBITS,timeout=1)
         self.serial.flush()

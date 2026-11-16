@@ -4,6 +4,8 @@
 # enabled and running, and checks they stay up. Run on the machine itself
 # (Scripts/deploy.sh runs it over SSH after copying the tree).
 #
+# The units' @...@ values are filled in from llm.conf as they are installed.
+#
 #   --restart     restart the services even if their unit files are unchanged
 #   --no-restart  leave running services alone, even if their unit changed
 #   --dry-run     only show what would change
@@ -16,7 +18,13 @@
 
 set -u
 
-REPO=$(cd "$(dirname "$0")/.." && pwd)
+REPO=${LLM_REPO:-$(cd "$(dirname "$0")/.." && pwd)}
+# deploy.sh --dry-run points these at the new unit files and llm.conf, and at
+# the list of files it would copy (relative to $REPO), since none of them is on
+# the machine yet
+UNITS=${LLM_UNITS_DIR:-$REPO/Scripts}
+CONFIG=${LLM_CONFIG:-$REPO/llm.conf}
+TREE_FILES=${LLM_TREE_FILES:-}
 MAIN_PATTERN='python[0-9.]* .*large-language-machine\.py'
 restart=auto
 dry_run=0
@@ -39,6 +47,16 @@ if [ $# -eq 0 ]; then
     echo "usage: $0 [--restart] [--no-restart] [--dry-run] [--sudo-password-stdin] SERVICE..." >&2
     exit 2
 fi
+
+# shellcheck source=../llm.conf
+source "$CONFIG" || { echo "ERROR: cannot read $CONFIG"; exit 1; }
+case $VENV_DIR in
+    /*) VENV=$VENV_DIR ;;
+    *) VENV=$REPO/$VENV_DIR ;;
+esac
+
+tmp=$(mktemp -d) || exit 1
+trap 'rm -rf "$tmp"' EXIT
 
 as_root() {
     if [ -n "$sudo_password" ]; then
@@ -63,17 +81,71 @@ needs_restart() {
     [ "$1" = 1 ]
 }
 
+# True if $1 exists, or is a file deploy.sh is about to copy (dry run)
+will_exist() {
+    [ -e "$1" ] && return 0
+    [ -n "$TREE_FILES" ] || return 1
+    case $1 in
+        "$REPO"/*) grep -qxF "${1#"$REPO"/}" "$TREE_FILES" ;;
+        *) return 1 ;;
+    esac
+}
+
+sed_escape() {
+    printf '%s' "$1" | sed 's/[|&\\]/\\&/g'
+}
+
+# Writes unit $1 with its @...@ values filled in from llm.conf to $2
+render_unit() {
+    local placeholders
+    sed -e "s|@LLM_DIR@|$(sed_escape "$REPO")|g" \
+        -e "s|@READER_PYTHON@|$(sed_escape "$READER_PYTHON")|g" \
+        -e "s|@VENV_PYTHON@|$(sed_escape "$VENV/bin/python3")|g" \
+        -e "s|@BROKER_SERVICE@|$(sed_escape "$BROKER_SERVICE")|g" \
+        -e "s|@RFID_SERIAL_TTY@|$(sed_escape "${RFID_SERIAL_PORT#/dev/}")|g" \
+        "$1" > "$2" || return
+    placeholders=$(grep -oE '@[A-Z_]+@' "$2" | sort -u | tr '\n' ' ')
+    if [ -n "$placeholders" ]; then
+        err "$1 has values install.sh does not fill in: $placeholders"
+        return 1
+    fi
+}
+
+# Checks that the program unit $2 runs is where the unit expects it
+check_exec_path() {
+    local svc=$1 src=$2 path
+    path=$(grep -E '^Exec(Start|Stop)=' "$src" | grep -oE '[~/][^ ;"]*\.(py|sh)' | head -n 1)
+    path=${path/#\~/$HOME}
+    [ -n "$path" ] || return
+    if ! will_exist "$path"; then
+        err "$svc runs $path, which is not on $(hostname)"
+    elif [ "${path%.sh}" != "$path" ] && [ -e "$path" ] && [ ! -x "$path" ]; then
+        err "$svc runs $path, which is not executable"
+    else
+        echo "$svc runs $path"
+    fi
+}
+
+# Notes where systemd currently loads unit $2 from, if that is not $3
+note_loaded_from() {
+    local frag=$1 svc=$2 dst=$3
+    if [ -n "$frag" ] && [ "$frag" != "$dst" ]; then
+        echo "NOTE: $svc is currently loaded from $frag"
+    fi
+}
+
 # Copies unit $1 to $2 if they differ, showing the diff. Returns 0 if it changed.
 update_unit() {
     local src=$1 dst=$2 sudo=$3
     if cmp -s "$src" "$dst"; then
+        echo "unchanged  $dst"
         return 1
     fi
     if [ -e "$dst" ]; then
-        echo "Updating $dst:"
+        echo "replace    $dst"
         diff -u "$dst" "$src" | sed 's/^/    /'
     else
-        echo "Installing new unit $dst"
+        echo "new        $dst"
     fi
     [ $dry_run = 1 ] && return 0
     # Replace rather than write through, in case $dst is a symlink
@@ -98,7 +170,7 @@ check_system_services() {
 }
 
 system_services() {
-    local svc src dst changed running script restarted=()
+    local svc src dst changed running restarted=()
 
     if [ $dry_run = 0 ] && ! as_root true 2>/dev/null; then
         err "sudo failed on $(hostname): wrong password, or a password is needed (deploy.sh asks for one)"
@@ -106,23 +178,19 @@ system_services() {
     fi
 
     for svc in "$@"; do
-        src=$REPO/Scripts/$svc
+        src=$tmp/$svc
         dst=/etc/systemd/system/$svc
         changed=0
 
-        if [ ! -f "$src" ]; then
-            err "$src does not exist"
+        if [ ! -f "$UNITS/$svc" ]; then
+            err "$UNITS/$svc does not exist"
             continue
         fi
-        script=$(sed -n 's/^ExecStart=.* \(\/[^ ]*\.py\).*/\1/p' "$src")
-        if [ -n "$script" ] && [ ! -f "$script" ]; then
-            err "$svc runs $script, which does not exist on $(hostname)"
-        fi
+        render_unit "$UNITS/$svc" "$src" || continue
+        check_exec_path "$svc" "$src"
 
-        # A unit linked straight from the repo is already up to date
-        if [ "$(readlink -f "$(systemctl show --property=FragmentPath --value "$svc")")" != "$(readlink -f "$src")" ]; then
-            update_unit "$src" "$dst" as_root && changed=1
-        fi
+        note_loaded_from "$(systemctl show --property=FragmentPath --value "$svc")" "$svc" "$dst"
+        update_unit "$src" "$dst" as_root && changed=1
 
         if [ $dry_run = 1 ]; then
             echo "$svc: $(systemctl is-enabled "$svc" 2>/dev/null), $(systemctl is-active "$svc")"
@@ -203,7 +271,7 @@ restart_main() {
 }
 
 user_service() {
-    local svc=$1 src=$REPO/Scripts/$1 dst=~/.config/systemd/user/$1 changed=0 running
+    local svc=$1 src=$tmp/$1 dst=~/.config/systemd/user/$1 changed=0 running
 
     export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
     if ! systemctl --user show-environment >/dev/null 2>&1; then
@@ -211,13 +279,13 @@ user_service() {
         return
     fi
 
-    if [ ! -x "$REPO/Scripts/launch-ll-machine.sh" ]; then
-        err "$REPO/Scripts/launch-ll-machine.sh is missing or not executable"
-    fi
-    if [ ! -f "$REPO/venv/bin/activate" ]; then
-        err "$REPO/venv is missing; large-language-machine.py cannot start"
+    render_unit "$UNITS/$svc" "$src" || return
+    check_exec_path "$svc" "$src"
+    if [ ! -f "$VENV/bin/activate" ]; then
+        err "$VENV is missing; large-language-machine.py cannot start"
     fi
 
+    note_loaded_from "$(systemctl --user show --property=FragmentPath --value "$svc")" "$svc" "$dst"
     update_unit "$src" "$dst" "" && changed=1
 
     if [ $dry_run = 1 ]; then

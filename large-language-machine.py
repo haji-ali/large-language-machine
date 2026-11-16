@@ -17,7 +17,10 @@ from rich import box
 from time import sleep
 from playsound3 import playsound
 from threading import Timer
+import llm_config
 console=Console()
+
+config = llm_config.load()
 
 # handle script being launched in debug mode (ie. `python3 large-language-machine.py debug`)
 debug_mode = False
@@ -63,7 +66,7 @@ secret_rules = database["setup"]["secret_rules"]
 
 # MQTT setup
 BROKER_ADDRESS = "localhost"
-PORT = 2883
+PORT = config.integer("MQTT_PORT")
 TOPIC_RFID = "home/sensors/rfid"
 TOPIC_UHF = "home/sensors/uhf"
 TOPIC_TRIGGER = "home/sensors/trigger"
@@ -79,7 +82,7 @@ TOPIC_READERS = "home/readers/"
 reader_online = {}
 reader_address = {}
 # The two RFID readers run the same script, so they are told apart by address
-RFID_READER_ADDRESSES = {"dataset": "192.168.1.12", "question": "192.168.1.14"}
+RFID_READER_ADDRESSES = {"dataset": config.ip("rfid-dataset"), "question": config.ip("rfid-questions")}
 
 def update_reader(topic, payload):
     if payload == "offline":
@@ -108,7 +111,7 @@ def sensor_icon(has_data, reader):
 
 # Timeout setup for going back to start screen
 idle_timer = None
-TIMEOUT_SECONDS = 60.0
+TIMEOUT_SECONDS = config.number("IDLE_TIMEOUT")
 
 # Set initial start screen animation
 start_screen_animation = 0
@@ -117,12 +120,12 @@ def check_network():
     try:
         # Try router
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("192.168.1.1", 80))
+        s.connect((config.text("ROUTER_IP"), 80))
         local_ip = s.getsockname()[0]
         s.close()
         
         # If the OS gives us our external IP, the Wi-Fi link is active
-        if local_ip == "192.168.1.10":
+        if local_ip == config.ip("inference"):
             return True
         return False
     except Exception:
@@ -182,7 +185,7 @@ def ollama_request(prompt_dict):
         # bringing in this concurrent.futures thing to enable a timeout on the ollama request
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(_generate)
-            response = future.result(timeout=20)
+            response = future.result(timeout=config.number("INFERENCE_TIMEOUT"))
             
         if debug_mode:
             console.print(payload)

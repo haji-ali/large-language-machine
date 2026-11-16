@@ -1,10 +1,13 @@
-# Python script to run on both RFID readers, broadcasting RFID tags over MQTT
+# Python script to run on the UHF reader, broadcasting RFID tags over MQTT
 
 import serial
 import paho.mqtt.client as mqtt 
 import time
 import json
 import socket
+import llm_config
+
+config = llm_config.load()
 
 # Set up UHF reader
 import uhf # type: ignore
@@ -12,18 +15,18 @@ import RPi.GPIO as GPIO   # type: ignore
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
-GPIO.setup(7, GPIO.OUT)
-GPIO.output(7, GPIO.LOW)
+GPIO.setup(config.integer("UHF_ENABLE_PIN"), GPIO.OUT)
+GPIO.output(config.integer("UHF_ENABLE_PIN"), GPIO.LOW)
 
 baudrate = '115200'
-port = '/dev/ttyAMA0'
+port = config.text("UHF_SERIAL_PORT")
 uhf = uhf.UHF(port, baudrate)
 uhf.setRegion_EU()
 
 # MQTT variables
-ADDRESS = "192.168.1.10"
+ADDRESS = config.ip("inference")
 TOPIC = "home/sensors/uhf"
-PORT = 2883
+PORT = config.integer("MQTT_PORT")
 KEEPALIVE = 15
 TOPIC_STATUS = "home/system/status"
 TOPIC_RESEND = "home/system/resend"

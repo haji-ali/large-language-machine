@@ -3,12 +3,15 @@ import paho.mqtt.client as mqtt # pyright: ignore[reportMissingImports]
 import json
 from time import sleep
 import socket
+import llm_config
 
-pot = MCP3008(channel=0)
+config = llm_config.load()
+
+pot = MCP3008(channel=config.integer("KNOB_ADC_CHANNEL"))
 
 # MQTT variables
-ADDRESS = "192.168.1.10"
-PORT = 2883
+ADDRESS = config.ip("inference")
+PORT = config.integer("MQTT_PORT")
 KEEPALIVE = 15
 TOPIC = "home/sensors/temperature"
 TOPIC_STATUS = "home/system/status"

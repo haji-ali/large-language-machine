@@ -4,34 +4,25 @@
 # not ignored) to every reachable machine of the Large Language Machine, then
 # runs Scripts/install.sh on each to install its systemd units and restart what
 # changed. Machines are handled in parallel and a summary is printed at the end.
+# The machines, their addresses and services, the login and the directory to
+# copy to all come from llm.conf.
 #
 # Run it from a computer on the "Large Language Machine" Wi-Fi. It asks once for
 # the machines' password (they all share one) and uses it for SSH and sudo;
 # press Enter at the prompt to rely on SSH keys and passwordless sudo instead.
 # Set LLM_PASSWORD to skip the prompt.
 #
-#   --dry-run     list the files that would be copied; change nothing
+#   --dry-run     list the files and units that would be installed (new) or
+#                 replaced, with their full paths on each machine; change nothing
 #   --restart     restart every service, even where nothing changed
 #   --no-restart  copy files and install units, leave running services alone
-#   MACHINE       only deploy to these machines (names from the table below)
+#   MACHINE       only deploy to these machines (names from MACHINES in llm.conf)
 #
 # Only files whose contents differ are copied. Host keys are kept in
-# ~/.ssh/known_hosts.large-language-machine, so they do not clash with other
-# networks' 192.168.1.x devices.
+# ~/.ssh/known_hosts.large-language-machine, so they do not clash with devices
+# at the same addresses on other networks.
 
 set -u
-
-# name          ssh destination       services (comma-separated)
-MACHINES="
-inference       nathan@192.168.1.10   launch-ll-machine.service
-uhf             nathan@192.168.1.11   read-uhf.service
-rfid-dataset    nathan@192.168.1.12   read-rfid.service
-button-knob     nathan@192.168.1.13   read-button.service,read-pot.service
-rfid-questions  nathan@192.168.1.14   read-rfid.service
-"
-
-# Relative to the home directory on each machine
-REMOTE_DIR=large-language-machine
 
 # Changes only under these paths do not need services restarting
 NO_RESTART_PATTERN='^(Docs/|Images/|Tests/|Tools/|README\.md$|LICENSE$|index\.html$|nixpacks\.toml$|\.gitignore$|.*\.pdf$)'
@@ -58,7 +49,18 @@ done
 
 cd "$(dirname "$0")/.." || exit 1
 
-all_names=$(echo "$MACHINES" | awk 'NF { print $1 }')
+if command -v python3 >/dev/null; then
+    python3 llm_config.py --quiet || { echo "Fix llm.conf before deploying." >&2; exit 1; }
+fi
+# shellcheck source=../llm.conf
+source llm.conf || exit 1
+
+# name ip services, one machine per line
+machine_rows() {
+    echo "$MACHINES" | awk '{ sub(/#.*/, "") } NF'
+}
+
+all_names=$(machine_rows | awk '{ print $1 }')
 for name in $selected; do
     if ! echo "$all_names" | grep -qx "$name"; then
         echo "unknown machine '$name'; choose from:" $all_names >&2
@@ -94,8 +96,9 @@ for f in sys.argv[1:]:
 sys.exit(bad)' || { echo "Fix the syntax errors above before deploying." >&2; exit 1; }
 fi
 
-if ! { ifconfig 2>/dev/null || ip -4 addr 2>/dev/null; } | grep -q 'inet 192\.168\.1\.'; then
-    echo "WARNING: this computer has no 192.168.1.x address. Is it on the Large Language Machine Wi-Fi?"
+subnet=${ROUTER_IP%.*}.
+if ! { ifconfig 2>/dev/null || ip -4 addr 2>/dev/null; } | grep -qF "inet $subnet"; then
+    echo "WARNING: this computer has no ${subnet}x address. Is it on the $WIFI_SSID Wi-Fi?"
 fi
 
 if tar --version 2>/dev/null | grep -q bsdtar; then
@@ -136,6 +139,16 @@ remote() {
     ssh $SSH_OPTS "$@"
 }
 
+# list_files LABEL LIST ROOT: shows the first 30 paths in LIST under ROOT
+list_files() {
+    local count
+    count=$(wc -l < "$2" | tr -d ' ')
+    awk -v p="$(printf '    %-8s %s/' "$1" "$3")" 'NR <= 30 { print p $0 }' "$2"
+    if [ "$count" -gt 30 ]; then
+        echo "    ... and $((count - 30)) more $1 files under $3/"
+    fi
+}
+
 # result NAME STATUS DETAIL
 result() {
     printf '%s\t%s\n' "$2" "$3" > "$tmp/$1.result"
@@ -143,10 +156,14 @@ result() {
 
 deploy_one() {
     local name=$1 dest=$2 services=${3//,/ }
-    local changed=$tmp/$name.changed n err flag
+    local changed=$tmp/$name.changed new=$tmp/$name.new replace=$tmp/$name.replace
+    local n root qroot units err flag
 
-    # Compare checksums against the machine's copy; this doubles as the SSH check
-    remote "$dest" "cd $REMOTE_DIR 2>/dev/null || { echo __MISSING__; exit 0; }; sha256sum -c --quiet - 2>/dev/null; exit 0" \
+    # Compare checksums against the machine's copy; this doubles as the SSH check.
+    # LLM_DIR is relative to the home directory unless it is absolute.
+    remote "$dest" "r=$(printf %q "$LLM_DIR"); case \$r in /*) ;; *) r=\$HOME/\$r ;; esac
+        echo \"__ROOT__ \$r\"; cd \"\$r\" 2>/dev/null || { echo __MISSING__; exit 0; }
+        sha256sum -c --quiet - 2>/dev/null; exit 0" \
         < "$tmp/manifest" > "$tmp/$name.check" 2> "$tmp/$name.err"
     if [ $? -eq 255 ]; then
         err=$(grep -v '^Warning: Permanently added' "$tmp/$name.err" | tail -n 1)
@@ -162,16 +179,21 @@ deploy_one() {
         return
     fi
 
+    root=$(sed -n 's/^__ROOT__ //p' "$tmp/$name.check")
+    qroot=$(printf %q "$root")
     if grep -qx __MISSING__ "$tmp/$name.check"; then
-        echo "~/$REMOTE_DIR does not exist yet; copying everything"
-        cp "$tmp/files" "$changed"
+        echo "$root does not exist yet; every file is new"
+        cp "$tmp/files" "$new"
+        : > "$replace"
     else
-        sed -n 's/: FAILED.*$//p' "$tmp/$name.check" > "$changed"
+        sed -n 's/: FAILED open or read$//p' "$tmp/$name.check" > "$new"
+        sed -n 's/: FAILED$//p' "$tmp/$name.check" > "$replace"
     fi
+    cat "$replace" "$new" > "$changed"
     n=$(wc -l < "$changed" | tr -d ' ')
-    echo "$n file(s) differ from this tree"
-    sed -n '1,30s/^/    /p' "$changed"
-    [ "$n" -gt 30 ] && echo "    ... and $((n - 30)) more"
+    echo "Files: $(wc -l < "$replace" | tr -d ' ') to replace, $(wc -l < "$new" | tr -d ' ') new, the rest unchanged"
+    list_files replace "$replace" "$root"
+    list_files new "$new" "$root"
 
     flag=$restart_flag
     if [ -z "$flag" ] && grep -Ev "$NO_RESTART_PATTERN" "$changed" | grep -q .; then
@@ -179,18 +201,35 @@ deploy_one() {
     fi
 
     if [ $dry_run = 1 ]; then
+        # Check the units against the machine without installing anything: the new
+        # unit files go to a temporary directory there, which is removed afterwards
+        echo "Units:"
+        units=
+        for svc in $services; do
+            units="$units Scripts/$svc"
+        done
+        # shellcheck disable=SC2086
+        COPYFILE_DISABLE=1 tar $TAR_OPTS -cf - Scripts/install.sh llm.conf $units -C "$tmp" files |
+            remote "$dest" "d=\$(mktemp -d) && tar -xmf - -C \"\$d\" &&
+                LLM_REPO=$qroot LLM_UNITS_DIR=\$d/Scripts LLM_CONFIG=\$d/llm.conf LLM_TREE_FILES=\$d/files \\
+                bash \"\$d/Scripts/install.sh\" --dry-run $services; s=\$?; rm -rf \"\$d\"; exit \$s" |
+            sed 's/^/  /'
+        if [ "${PIPESTATUS[1]}" != 0 ]; then
+            result "$name" FAILED "dry run found problems (see log above)"
+            return
+        fi
         case $flag in
             --restart) echo "Would restart: $services" ;;
             *) echo "Would restart only services whose unit file changed or that are not running" ;;
         esac
-        result "$name" OK "dry run, $n file(s) differ"
+        result "$name" OK "dry run: $(wc -l < "$replace" | tr -d ' ') to replace, $(wc -l < "$new" | tr -d ' ') new"
         return
     fi
 
     if [ "$n" -gt 0 ]; then
         # shellcheck disable=SC2086
         if ! COPYFILE_DISABLE=1 tar $TAR_OPTS -cf - -T "$changed" |
-            remote "$dest" "mkdir -p $REMOTE_DIR && tar -xmf - -C $REMOTE_DIR"; then
+            remote "$dest" "mkdir -p $qroot && tar -xmf - -C $qroot"; then
             result "$name" FAILED "copying files failed"
             return
         fi
@@ -199,8 +238,8 @@ deploy_one() {
     echo "Running Scripts/install.sh $flag $services"
     # shellcheck disable=SC2086
     if printf '%s\n' "$LLM_PASSWORD" |
-        remote "$dest" "bash $REMOTE_DIR/Scripts/install.sh --sudo-password-stdin $flag $services"; then
-        result "$name" OK "$n file(s) updated"
+        remote "$dest" "bash $qroot/Scripts/install.sh --sudo-password-stdin $flag $services"; then
+        result "$name" OK "$(wc -l < "$replace" | tr -d ' ') replaced, $(wc -l < "$new" | tr -d ' ') new"
     else
         result "$name" FAILED "install.sh reported errors (see log above)"
     fi
@@ -208,10 +247,10 @@ deploy_one() {
 
 echo "Deploying $(git describe --always --dirty 2>/dev/null) to:" $names
 for name in $names; do
-    set -- $(echo "$MACHINES" | awk -v n="$name" '$1 == n')
-    deploy_one "$1" "$2" "$3" > "$tmp/$name.log" 2>&1 &
+    set -- $(machine_rows | awk -v n="$name" '$1 == n')
+    deploy_one "$1" "$SSH_USER@$2" "$3" > "$tmp/$name.log" 2>&1 &
     echo $! > "$tmp/$name.pid"
-    echo "$2" > "$tmp/$name.dest"
+    echo "$SSH_USER@$2" > "$tmp/$name.dest"
 done
 
 # Print each machine's log as it finishes

@@ -6,7 +6,7 @@ StartLimitIntervalSec=0
 Type=simple
 # Starts straight away: the script connects to the broker in the background and
 # keeps retrying, so the router, the PC and the other readers can come up in any order
-ExecStart=/usr/bin/python3 /home/nathan/large-language-machine/button-read.py
+ExecStart=@READER_PYTHON@ @LLM_DIR@/button-read.py
 # Send print() output to the journal as it happens
 Environment=PYTHONUNBUFFERED=1
 Restart=always

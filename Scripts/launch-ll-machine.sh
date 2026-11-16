@@ -5,11 +5,17 @@
 # The program is restarted whenever it crashes or is killed (Scripts/install.sh
 # kills it to load new code). Ctrl+C exits it cleanly and drops to a shell.
 
-VENV_ACTIVATE=~/large-language-machine/venv/bin/activate
+REPO=$(cd "$(dirname "$0")/.." && pwd)
+source "$REPO/llm.conf"
 
-LLM_SCRIPT=~/large-language-machine/large-language-machine.py
+case $VENV_DIR in
+    /*) VENV_ACTIVATE=$VENV_DIR/bin/activate ;;
+    *) VENV_ACTIVATE=$REPO/$VENV_DIR/bin/activate ;;
+esac
 
-cd ~/large-language-machine
+LLM_SCRIPT=$REPO/large-language-machine.py
+
+cd "$REPO"
 
 # Activate the virtual environment
 source "$VENV_ACTIVATE"

@@ -11,19 +11,24 @@ Everything is run through Python scripts. The main machine ("Inference") hosts a
 
 Each reader is a Raspberry Pi which runs its own scripts (except the RFID readers which both run the same `rfid-read.py` script), which are launched and maintained by systemd services (each of which is located in /Scripts). The machines can start in any order and drop off and rejoin the network: the readers keep retrying the connection, and whenever the main script (re)connects it asks every reader to announce itself and send its current reading again. A reader's output can be read with `journalctl -u read-rfid.service -f` (or `read-uhf`, `read-button`, `read-pot`).
 
+### Configuration
+Everything that might need changing lives in `llm.conf` at the top of the repo: each machine's name, IP address and systemd services, the `ssh` login, where the code lives on each machine, the Python virtual environment, serial ports, GPIO pins, the MQTT port and timeouts. Every script reads it, and the systemd unit files in `/Scripts` take their paths from it when they are installed. After editing it, run `python3 llm_config.py` to check it, then deploy it (below).
+
 ### Deploying changes
-From a laptop on the `Large Language Machine` wifi, run `Scripts/deploy.sh`. It copies the current working tree to every machine it can reach (only files that differ), installs each machine's systemd units, restarts the services whose code or units changed, checks they stay up, and prints a summary of what worked and what didn't. Use `--dry-run` to see what would change, `--restart` to restart everything, or name machines to deploy to only those (e.g. `Scripts/deploy.sh button-knob`). It asks once for the `nathan` password shared by all the machines and uses it for both SSH and `sudo`. On the main PC, `large-language-machine.py` restarts automatically if it crashes or is killed; Ctrl-C stops it and leaves a shell.
+From a laptop on the `Large Language Machine` wifi, run `Scripts/deploy.sh`. It copies the current working tree to every machine listed in `llm.conf` that it can reach (only files that differ), installs each machine's systemd units, restarts the services whose code or units changed, checks they stay up, and prints a summary of what worked and what didn't. Use `--dry-run` to list every file and systemd unit it would install (new) or replace, with its full path on each machine, `--restart` to restart everything, or name machines to deploy to only those (e.g. `Scripts/deploy.sh button-knob`). It asks once for the `nathan` password shared by all the machines and uses it for both SSH and `sudo`. On the main PC, `large-language-machine.py` restarts automatically if it crashes or is killed; Ctrl-C stops it and leaves a shell.
 
 The best way to access each device is by connecting to the internal offline wifi network (managed by the router inside the machine, with the SSID `Large Language Machine`) and ssh using the IP addresses below. There's also a mouse and keyboard stored internally for accessing the PC's desktop interface. Press F11 to exit the full-screen terminal and ctrl-C to kill the Large Language Machine script. The desktop is the same blue as the terminal which can be confusing, you need to press the Super key or move the mouse to the dock on the right hand side to find some GUI.
 
 ## Device directory
-| Device                      | Name        | IP           | Main script(s)                   | Systemd service(s)                        |
-|-----------------------------|-------------|--------------|----------------------------------|-------------------------------------------|
-| Main server PC              | Inference   | 192.168.1.10 | `large-language-machine.py`      | `launch-ll-machine.service`               |
-| UHF Reader (Secret Rules)   | Pi5-01      | 192.168.1.11 | `uhf-read.py`                    | `read-uhf.service`                        |
-| RFID Reader (Dataset tubes) | piZero2W-02 | 192.168.1.12 | `rfid-read.py`                   | `read-rfid.service`                       |
-| Button and knob reader      | piZero2W-01 | 192.168.1.13 | `buttond-read.py`, `pot-read.py` | `read-button.service`, `read-pot.service` |
-| RFID Reader (Question cards)| piZ-03      | 192.168.1.14 | `rfid-read.py`                   | `read-rfid.service`                       |
+The names, IP addresses and services are set in `llm.conf`.
+
+| Device                      | Name        | `llm.conf` name | IP           | Main script(s)                  | Systemd service(s)                        |
+|-----------------------------|-------------|-----------------|--------------|---------------------------------|-------------------------------------------|
+| Main server PC              | Inference   | inference       | 192.168.1.10 | `large-language-machine.py`     | `launch-ll-machine.service`               |
+| UHF Reader (Secret Rules)   | Pi5-01      | uhf             | 192.168.1.11 | `uhf-read.py`                   | `read-uhf.service`                        |
+| RFID Reader (Dataset tubes) | piZero2W-02 | rfid-dataset    | 192.168.1.12 | `rfid-read.py`                  | `read-rfid.service`                       |
+| Button and knob reader      | piZero2W-01 | button-knob     | 192.168.1.13 | `button-read.py`, `pot-read.py` | `read-button.service`, `read-pot.service` |
+| RFID Reader (Question cards)| piZ-03      | rfid-questions  | 192.168.1.14 | `rfid-read.py`                  | `read-rfid.service`                       |
 
 ## Physical access
 
