@@ -1,0 +1,13 @@
+[Unit]
+Description=Keeps this machine connected to the Large Language Machine Wi-Fi.
+After=NetworkManager.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/bin/bash @LLM_DIR@/Scripts/wifi-watchdog.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

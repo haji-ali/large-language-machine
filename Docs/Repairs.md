@@ -22,6 +22,9 @@ The best way to access each device is by connecting to the internal offline wifi
 ### Power
 When the PC powers off, `shutdown-readers.service` on the PC tells every reader to shut down (over MQTT, to `reader-power.service` on each reader) and waits until they have, so the screen going off means the readers are off too and the power can be cut safely. A reader that has shut down stays off until its power is switched off and on again. `READERS_ON_PC_POWEROFF` and `READERS_ON_PC_REBOOT` in `llm.conf` choose what the readers do. To shut the readers down without the PC, run `venv/bin/python3 reader-power.py poweroff` on the PC.
 
+### Wi-Fi
+`wifi-watchdog.service` runs on every machine. It sets the `Large Language Machine` Wi-Fi profile up for unattended use (connects with nobody logged in, password stored in the profile, never stops retrying, power saving off), keeps a copy of it, and reconnects (restoring the profile if it has gone) whenever the Wi-Fi has been down for a minute. It leaves a connection to any other network alone; to keep a machine off the Wi-Fi, run `sudo systemctl stop wifi-watchdog` first. `journalctl -u wifi-watchdog` shows what it has done.
+
 ## Device directory
 The names, IP addresses and services are set in `llm.conf`.
 
@@ -33,7 +36,7 @@ The names, IP addresses and services are set in `llm.conf`.
 | Button and knob reader      | piZero2W-01 | button-knob     | 192.168.1.13 | `button-read.py`, `pot-read.py` | `read-button.service`, `read-pot.service` |
 | RFID Reader (Question cards)| piZ-03      | rfid-questions  | 192.168.1.14 | `rfid-read.py`                  | `read-rfid.service`                       |
 
-Every reader also runs `reader-power.service`.
+Every reader also runs `reader-power.service`, and every machine runs `wifi-watchdog.service`.
 
 ## Physical access
 
