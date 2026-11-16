@@ -20,6 +20,8 @@ from pathlib import Path
 
 CONFIG_FILE = Path(os.environ.get("LLM_CONFIG", Path(__file__).resolve().parent / "llm.conf"))
 
+POWER_ACTIONS = ("poweroff", "reboot", "nothing")
+
 _ASSIGNMENT = re.compile(r"([A-Za-z_][A-Za-z0-9_]*)=(.*)")
 
 
@@ -161,6 +163,10 @@ def check(config):
         config.integer(key)
     for key in ("IDLE_TIMEOUT", "INFERENCE_TIMEOUT"):
         config.number(key)
+    if not 0 <= config.integer("READER_SHUTDOWN_TIMEOUT") <= 100:
+        raise ConfigError(f"{config.source}: READER_SHUTDOWN_TIMEOUT should be between 0 and 100")
+    for key in ("READERS_ON_PC_POWEROFF", "READERS_ON_PC_REBOOT"):
+        config.choice(key, POWER_ACTIONS)
 
 
 def main():

@@ -4,7 +4,7 @@
 ![LLM Layout 1](files/llm-layout-1.jpg)    
   
 ## Powering on:    
-1. Turn on power at both plug sockets (marked *1. Compute* and *2. Readers*).    
+1. Turn on power at both plug sockets (marked *1. Compute* and *2. Readers*). If they are already on, turn *2. Readers* off and on again: the readers switch themselves off when the machine is powered off, and only start again when their power comes back.    
 2. Press the power button, concealed at the rear left of the machine underneath the lower panel.    
 3. A test screen will appear on-screen. Each sensor connects as soon as its reader and the router have booted, which can take up to 2 minutes. On the test screen, 🔌 means a reader isn't connected yet and ❌ means it's connected but hasn't read anything yet. A "🔌 Button not connected" line shows until the button's reader connects.   
 4. Once the button lights up, test each sensor:   
@@ -16,14 +16,15 @@
 6. Set the right volume for the environment using the concealed control underneath.   
    
 ## Powering off:    
-1. Press the power button.   
+1. Press the power button. The machine shuts the readers down before itself, so the screen can stay on for up to a minute.   
 2. Once the screen is off, wait 5 seconds then turn off power at both plug sockets.   
    
 ## Quick restart:    
 1. Press the power button.   
 2. Once the screen is off, wait 5 seconds.   
-3. Hit the power button again.   
-4. Startup checks will appear on screen, you can complete them straight away and press the button.   
+3. Turn *2. Readers* off, wait 5 seconds, and turn it back on (the readers switched themselves off with the machine).   
+4. Hit the power button again.   
+5. Complete the startup checks once the sensors have connected (up to 2 minutes).   
    
 ## Full reboot (~3 min required):    
 1. Press the power button.   

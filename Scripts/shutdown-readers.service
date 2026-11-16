@@ -1,0 +1,18 @@
+[Unit]
+Description=Powers the readers off (READERS_ON_PC_POWEROFF in llm.conf) as inference shuts down.
+# Units stop in the reverse order they start in, so this stops while the
+# network and the MQTT broker are still up
+After=network.target @BROKER_SERVICE@
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true
+# Does nothing unless the whole PC is powering off or rebooting
+ExecStop=@VENV_PYTHON@ @LLM_DIR@/reader-power.py pc-shutdown
+Environment=PYTHONUNBUFFERED=1
+# Longer than READER_SHUTDOWN_TIMEOUT, which is at most 100
+TimeoutStopSec=120
+
+[Install]
+WantedBy=multi-user.target

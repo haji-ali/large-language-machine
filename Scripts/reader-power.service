@@ -1,0 +1,16 @@
+[Unit]
+Description=Powers this reader off or reboots it when inference sends the command over MQTT.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+# Starts straight away: the script connects to the broker in the background and
+# keeps retrying, so the router, the PC and the other readers can come up in any order
+ExecStart=@READER_PYTHON@ @LLM_DIR@/reader-power.py listen
+# Send print() output to the journal as it happens
+Environment=PYTHONUNBUFFERED=1
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
